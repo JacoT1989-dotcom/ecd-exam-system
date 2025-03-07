@@ -1,0 +1,61 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  firstName     String
+  lastName      String
+  displayName   String
+  email         String    @unique
+  passwordHash  String
+  phoneNumber   String    @default("")
+  streetAddress String
+  suburb        String?
+  townCity      String
+  postcode      String
+  country       String
+  avatarUrl     String?
+  backgroundUrl String?
+  agreeTerms    Boolean   @default(false)
+  role          UserRole  @default(USER)
+  Session       Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+enum UserRole {
+  USER
+  STUDENT
+  TEACHER
+  SCHOOL_ADMINISTRATOR
+  PRINCIPAL
+  PROVINCIAL_EDUCATION_OFFICIAL
+  NATIONAL_EDUCATION_DEPARTMENTOFFICIAL
+  EXAM_INVIGILATOR
+  SYSTEM_ADMINISTRATOR
+  TECHNICAL_SUPPORT_OFFICER
+  CONTENT_DEVELOPER
+  SECURITY_OFFICER
+  DATA_PROTECTION_OFFICER
+  QUALITY_ASSURANCE_OFFICER
+  EXAMINATION_BOARD_MEMBER
+  PARENT_GUARDIAN
+  SUPER_ADMINISTRATOR
+}
