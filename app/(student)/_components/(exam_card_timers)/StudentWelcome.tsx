@@ -1,25 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useSession } from "../SessionProvider";
-
-// Define interface for subject
-interface Subject {
-  id: number;
-  name: string;
-  code: string;
-  description: string;
-  examDate: Date;
-  color: string;
-}
-
-// Define interface for time remaining object
-interface TimeRemaining {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-  isAvailable: boolean;
-}
+import { useSession } from "../../SessionProvider";
+import { Subject, TimeRemaining } from "./types";
+import ExamCard from "./ExamCard";
+import UnavailableExamModal from "./UnavailableExamModal";
 
 const StudentWelcome = () => {
   const { user } = useSession();
@@ -270,97 +254,25 @@ const StudentWelcome = () => {
           const examDateDisplay = formatExamDate(subject.examDate);
 
           return (
-            <a
+            <ExamCard
               key={subject.id}
-              href={isAvailable ? `/exam/${subject.id}` : "#"}
-              onClick={(e) => {
-                e.preventDefault();
-                handleExamClick(subject);
-              }}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer flex flex-col h-full"
-            >
-              <div className={`${subject.color} h-2 w-full`}></div>
-              <div className="p-6 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {subject.name}
-                  </h3>
-                  <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded">
-                    {subject.code}
-                  </span>
-                </div>
-
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {subject.description}
-                </p>
-
-                <div className="flex flex-col space-y-2 flex-grow">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-500">
-                      Exam time:
-                    </span>
-                    <span className="text-sm font-medium">
-                      {examDateDisplay}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-500">
-                      Time remaining:
-                    </span>
-                    <span
-                      className={`text-sm font-bold ${isAvailable ? "text-green-600" : "text-blue-600"}`}
-                    >
-                      {timeDisplay}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-4 h-10 flex items-center justify-center">
-                  <div
-                    className={`w-full py-2 px-4 rounded font-medium text-center transition-colors duration-300 
-                      ${
-                        isAvailable
-                          ? "bg-[#3e6788] hover:bg-[#2d4d66] text-white"
-                          : "bg-gray-100 text-gray-400"
-                      }`}
-                  >
-                    {isAvailable ? "Start Exam" : "Not Yet Available"}
-                  </div>
-                </div>
-              </div>
-            </a>
+              subject={subject}
+              isAvailable={isAvailable}
+              timeDisplay={timeDisplay}
+              examDateDisplay={examDateDisplay}
+              onExamClick={handleExamClick}
+            />
           );
         })}
       </div>
 
       {/* Unavailable Exam Modal */}
       {showModal && selectedSubject && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              Exam Not Available
-            </h3>
-            <p className="text-gray-600 mb-6">
-              This exam for{" "}
-              <span className="font-semibold">{selectedSubject.name}</span> is
-              not available until{" "}
-              <span className="font-semibold">
-                {formatExamDate(selectedSubject.examDate)}
-              </span>
-              .
-              <br />
-              <br />
-              Please log in again at the correct time to access this exam.
-            </p>
-            <button
-              onClick={() => setShowModal(false)}
-              className="w-full bg-[#3e6788] hover:bg-[#2d4d66] text-white font-medium py-2 px-4 rounded transition-colors duration-300"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+        <UnavailableExamModal
+          subject={selectedSubject}
+          formatExamDate={formatExamDate}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </div>
   );

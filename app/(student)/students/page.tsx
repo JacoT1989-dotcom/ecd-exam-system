@@ -1,6 +1,6 @@
 "use client";
 
-import StudentWelcome from "../_components/StudentWelcome";
+import StudentWelcome from "../_components/(exam_card_timers)/StudentWelcome";
 
 export default function DashboardPage() {
   return (
