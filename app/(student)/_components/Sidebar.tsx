@@ -120,12 +120,12 @@ const Sidebar = () => {
   const pathname = usePathname();
   const { user } = useSession();
   const [isCollapsed, setIsCollapsed] = useState(false);
-
+  
   // Load collapse state from localStorage on client side
   useEffect(() => {
-    const storedState = localStorage.getItem("sidebarCollapsed");
+    const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState !== null) {
-      setIsCollapsed(storedState === "true");
+      setIsCollapsed(storedState === 'true');
     }
   }, []);
 
@@ -140,20 +140,20 @@ const Sidebar = () => {
       }
     }
   }, [isCollapsed]);
-
+  
   // Toggle sidebar state
   const toggleSidebar = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
-    localStorage.setItem("sidebarCollapsed", newState.toString());
+    localStorage.setItem('sidebarCollapsed', newState.toString());
   };
 
   return (
     <>
       {/* Main sidebar */}
-      <aside
+      <aside 
         className={`bg-[#3e6788] fixed top-[88px] left-0 bottom-0 overflow-y-auto flex flex-col border-r border-gray-700 transition-all duration-300 ease-in-out ${
-          isCollapsed ? "w-16" : "w-80"
+          isCollapsed ? 'w-16' : 'w-80'
         }`}
       >
         {/* User profile section - Only show when expanded */}
@@ -179,7 +179,7 @@ const Sidebar = () => {
             <h2 className="text-2xl font-bold text-white text-center">
               {user?.firstName} {user?.lastName}
             </h2>
-
+            
             {/* Stats section */}
             <div className="flex w-full mt-4 justify-between border-t border-gray-600 pt-4">
               <div className="text-center">
@@ -193,7 +193,7 @@ const Sidebar = () => {
             </div>
           </div>
         )}
-
+        
         {/* Collapsed profile - mini avatar only */}
         {isCollapsed && (
           <div className="flex flex-col items-center py-6 border-b border-gray-700">
@@ -226,18 +226,16 @@ const Sidebar = () => {
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className={`flex items-center ${isCollapsed ? "justify-center" : "px-6"} py-3 text-white hover:bg-[#2d4d66] hover:text-white transition-colors duration-200
-                      ${isActive ? "bg-[#2d4d66] font-medium" : ""}`}
+                    className={`flex items-center ${isCollapsed ? 'justify-center' : 'px-6'} py-3 text-white hover:bg-[#2d4d66] hover:text-white transition-colors duration-200
+                      ${isActive ? 'bg-[#2d4d66] font-medium' : ''}`}
                     title={isCollapsed ? item.name : ""}
                   >
                     <span
-                      className={`${isCollapsed ? "" : "mr-3"} ${isActive ? "text-white" : "text-gray-200"}`}
+                      className={`${isCollapsed ? '' : 'mr-3'} ${isActive ? 'text-white' : 'text-gray-200'}`}
                     >
                       <item.icon />
                     </span>
-                    {!isCollapsed && (
-                      <span className="text-lg">{item.name}</span>
-                    )}
+                    {!isCollapsed && <span className="text-lg">{item.name}</span>}
                   </Link>
                 </li>
               );
@@ -246,17 +244,29 @@ const Sidebar = () => {
         </nav>
       </aside>
 
-      {/* Toggle button - separate from sidebar to ensure visibility */}
+      {/* Toggle button - separate from sidebar with better styling */}
       <button
         onClick={toggleSidebar}
-        className={`fixed top-[120px] z-50 bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-3 transition-all duration-300 ${
-          isCollapsed ? "left-16 rounded-r-md" : "left-80 rounded-r-md"
+        className={`fixed top-[120px] z-50 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white py-2 px-3 transition-all duration-300 ${
+          isCollapsed 
+            ? 'left-16 rounded-r-md' 
+            : 'left-80 rounded-r-md'
         }`}
         style={{
-          boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
         }}
       >
-        {isCollapsed ? ">" : "<"}
+        <svg 
+          className="w-5 h-5" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            d={isCollapsed ? "M10 6L8.59 7.41L13.17 12L8.59 16.59L10 18L16 12L10 6Z" : "M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12L15.41 7.41Z"} 
+            fill="currentColor"
+          />
+        </svg>
       </button>
     </>
   );

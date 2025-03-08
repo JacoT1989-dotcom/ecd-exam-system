@@ -9,10 +9,17 @@ import ExamCard from "./ExamCard";
 const StudentWelcome = () => {
   const { user } = useSession();
   const [greeting, setGreeting] = useState("Good day");
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [isClient, setIsClient] = useState(false);
   const [showUnavailableModal, setShowUnavailableModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+
+  // Set isClient to true when component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+    setCurrentTime(new Date());
+  }, []);
 
   // Current date to set fixed exam dates
   const baseDate = new Date();
@@ -141,16 +148,20 @@ const StudentWelcome = () => {
     },
   ];
 
-  // Update current time every second to keep timers accurate
+  // Update current time every second to keep timers accurate - but only after initial render
   useEffect(() => {
+    if (!isClient) return;
+
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
+    if (!isClient) return;
+
     // Set greeting based on time of day
     const hour = new Date().getHours();
     if (hour < 12) {
@@ -160,10 +171,15 @@ const StudentWelcome = () => {
     } else {
       setGreeting("Good evening");
     }
-  }, []);
+  }, [isClient]);
 
   // Function to calculate remaining time until exam
   const calculateTimeRemaining = (examDate: Date): TimeRemaining => {
+    // Return default values if currentTime is not set yet
+    if (!currentTime) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, isAvailable: false };
+    }
+
     const difference = examDate.getTime() - currentTime.getTime();
 
     // Return zeros if the exam date is in the past
@@ -251,7 +267,9 @@ const StudentWelcome = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {subjects.map((subject: Subject) => {
           const timeRemaining = calculateTimeRemaining(subject.examDate);
-          const timeDisplay = formatTimeRemaining(timeRemaining);
+          const timeDisplay = isClient
+            ? formatTimeRemaining(timeRemaining)
+            : "Loading...";
           const isAvailable = timeRemaining.isAvailable;
           const examDateDisplay = formatExamDate(subject.examDate);
 
