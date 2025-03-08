@@ -25,7 +25,7 @@ export default async function CustomerLayout({
         <Navbar />
         <div className="flex w-full grow">
           <Sidebar />
-          <main className="flex-grow bg-gray-100">{children}</main>
+          <main className="flex-grow bg-gray-100 m-2">{children}</main>
         </div>
       </div>
     </SessionProvider>
