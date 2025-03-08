@@ -1,8 +1,7 @@
 "use client";
 
 import { Subject } from "./types";
-
-// Define the Subject interface directly in this file
+import { useSession } from "../../SessionProvider";
 
 interface ExamCardProps {
   subject: Subject;
@@ -19,9 +18,14 @@ const ExamCard = ({
   examDateDisplay,
   onExamClick,
 }: ExamCardProps) => {
+  const { user } = useSession();
+
+  // Create the correct URL path format
+  const examUrl = user ? `/students/exam/subjects` : "#";
+
   return (
     <a
-      href={isAvailable ? `/students/exam/${subject.id}` : "#"}
+      href={isAvailable ? examUrl : "#"}
       onClick={(e) => {
         e.preventDefault();
         onExamClick(subject);

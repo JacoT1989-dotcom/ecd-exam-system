@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "../../SessionProvider";
 import UnavailableExamModal from "./UnavailableExamModal";
+import LanguageSelectionModal from "./LanguageSelectionModal";
 import { Subject, TimeRemaining } from "./types";
 import ExamCard from "./ExamCard";
 
@@ -9,7 +10,8 @@ const StudentWelcome = () => {
   const { user } = useSession();
   const [greeting, setGreeting] = useState("Good day");
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showModal, setShowModal] = useState(false);
+  const [showUnavailableModal, setShowUnavailableModal] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
   // Current date to set fixed exam dates
@@ -49,9 +51,9 @@ const StudentWelcome = () => {
     },
     {
       id: 3,
-      name: "Computer Science",
-      code: "CS401",
-      description: "Data Structures and Algorithms",
+      name: "Life Orientation",
+      code: "LIFE",
+      description: "Life Orientation",
       examDate: new Date(
         baseDate.getFullYear(),
         baseDate.getMonth(),
@@ -220,14 +222,14 @@ const StudentWelcome = () => {
   // Handle exam card click
   const handleExamClick = (subject: Subject): void => {
     const timeRemaining = calculateTimeRemaining(subject.examDate);
+    setSelectedSubject(subject);
 
-    if (timeRemaining.isAvailable) {
-      // Navigate to exam route
-      window.location.href = `/students/exam/${subject.id}`;
+    if (timeRemaining.isAvailable && user) {
+      // Show language selection modal for available exams
+      setShowLanguageModal(true);
     } else {
-      // Show unavailable modal
-      setSelectedSubject(subject);
-      setShowModal(true);
+      // Show unavailable modal for unavailable exams
+      setShowUnavailableModal(true);
     }
   };
 
@@ -267,11 +269,19 @@ const StudentWelcome = () => {
       </div>
 
       {/* Unavailable Exam Modal */}
-      {showModal && selectedSubject && (
+      {showUnavailableModal && selectedSubject && (
         <UnavailableExamModal
           subject={selectedSubject}
           formatExamDate={formatExamDate}
-          onClose={() => setShowModal(false)}
+          onClose={() => setShowUnavailableModal(false)}
+        />
+      )}
+
+      {/* Language Selection Modal */}
+      {showLanguageModal && selectedSubject && (
+        <LanguageSelectionModal
+          subject={selectedSubject}
+          onClose={() => setShowLanguageModal(false)}
         />
       )}
     </div>
