@@ -1,0 +1,17 @@
+model Subject {
+    id                  String   @id @default(uuid())
+    title               String
+    subjectCode         String   @unique @map("subject_code")
+    startingTime        DateTime @map("starting_time")
+    dueTime             DateTime @map("due_time")
+    examDate            DateTime @map("exam_date")
+    isExamSubjectActive Boolean  @default(false) @map("is_exam_subject_active")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("subjects")
+}
