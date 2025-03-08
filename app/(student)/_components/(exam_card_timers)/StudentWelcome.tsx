@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "../../SessionProvider";
+import UnavailableExamModal from "./UnavailableExamModal";
 import { Subject, TimeRemaining } from "./types";
 import ExamCard from "./ExamCard";
-import UnavailableExamModal from "./UnavailableExamModal";
 
 const StudentWelcome = () => {
   const { user } = useSession();
@@ -223,7 +223,7 @@ const StudentWelcome = () => {
 
     if (timeRemaining.isAvailable) {
       // Navigate to exam route
-      window.location.href = `/exam/${subject.id}`;
+      window.location.href = `/students/exam/${subject.id}`;
     } else {
       // Show unavailable modal
       setSelectedSubject(subject);

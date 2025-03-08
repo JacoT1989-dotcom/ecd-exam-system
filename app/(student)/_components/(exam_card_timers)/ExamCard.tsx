@@ -21,7 +21,7 @@ const ExamCard = ({
 }: ExamCardProps) => {
   return (
     <a
-      href={isAvailable ? `/exam/${subject.id}` : "#"}
+      href={isAvailable ? `/students/exam/${subject.id}` : "#"}
       onClick={(e) => {
         e.preventDefault();
         onExamClick(subject);
