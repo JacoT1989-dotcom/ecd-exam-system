@@ -2,6 +2,7 @@ import { validateRequest } from "@/auth";
 import { redirect } from "next/navigation";
 import SessionProvider from "./SessionProvider";
 import Navbar from "./_components/Navbar";
+import Sidebar from "./_components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
 
 export const dynamic = "force-dynamic";
@@ -22,9 +23,9 @@ export default async function CustomerLayout({
       <Toaster />
       <div className="flex min-h-screen flex-col">
         <Navbar />
-        <div className="bg-slate-400"></div>
         <div className="flex w-full grow">
-          <main className="flex-grow">{children}</main>
+          <Sidebar />
+          <main className="flex-grow bg-gray-100">{children}</main>
         </div>
       </div>
     </SessionProvider>

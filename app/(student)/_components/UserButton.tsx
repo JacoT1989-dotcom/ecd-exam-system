@@ -61,7 +61,7 @@ export default function UserButton({ className }: UserButtonProps) {
           <UserAvatar avatarUrl={user.avatarUrl} size={40} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56" sideOffset={25}>
         <DropdownMenuLabel>Logged in as {user.displayName}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <Link href={`/customer`}>
@@ -70,8 +70,7 @@ export default function UserButton({ className }: UserButtonProps) {
             My Account
           </DropdownMenuItem>
         </Link>
-        <DropdownMenuSeparator />
-        <DropdownMenuSub>
+        {/* <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <Monitor className="mr-2 size-4" />
             Theme
@@ -95,7 +94,7 @@ export default function UserButton({ className }: UserButtonProps) {
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
-        </DropdownMenuSub>
+        </DropdownMenuSub> */}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}

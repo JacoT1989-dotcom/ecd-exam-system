@@ -1,22 +1,18 @@
 "use client";
 
-import Navbar from "../_components/Navbar";
 import StudentWelcome from "../_components/StudentWelcome";
 
 export default function DashboardPage() {
   return (
-    <main className="min-h-screen bg-gray-100">
-      {/* Navbar component */}
-      <Navbar />
-
+    <div className="min-h-screen bg-gray-100 p-6">
       {/* Main content area */}
-      <div className="container mx-auto ">
+      <div className="container mx-auto">
         {/* Welcome component */}
         <StudentWelcome />
       </div>
 
       {/* Professional footer */}
-      <footer className="py-4 bg-[#3e6788] text-white mt-6">
+      <footer className="py-4 bg-[#3e6788] text-white mt-6 rounded-lg">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-2 md:mb-0">
@@ -35,6 +31,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
