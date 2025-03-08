@@ -1,5 +1,6 @@
 model Subject {
-    id                  String   @id @default(uuid())
+    id String @id @default(uuid())
+
     title               String
     subjectCode         String   @unique @map("subject_code")
     startingTime        DateTime @map("starting_time")
