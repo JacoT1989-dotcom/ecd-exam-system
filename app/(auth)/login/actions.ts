@@ -10,7 +10,7 @@ import { UserRole } from "@prisma/client";
 
 const roleRoutes: Record<UserRole, string> = {
   [UserRole.USER]: "/register-success",
-  [UserRole.STUDENT]: "/student",
+  [UserRole.STUDENT]: "/students",
   [UserRole.TEACHER]: "/teacher",
   [UserRole.SCHOOL_ADMINISTRATOR]: "/school-admin",
   [UserRole.PRINCIPAL]: "/principal",

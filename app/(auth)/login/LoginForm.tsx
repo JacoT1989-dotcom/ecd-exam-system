@@ -103,7 +103,7 @@ const LoginForm = ({ inModal = false }: LoginFormProps) => {
           <h1
             className={`text-2xl font-semibold ${inModal ? "text-gray-800" : "text-foreground"}`}
           >
-            Welcome to DEMS! 👋
+            Welcome to DEMS!
           </h1>
           <p className={inModal ? "text-gray-500" : "text-muted-foreground"}>
             Sign in to access the Digital Exam Management System
