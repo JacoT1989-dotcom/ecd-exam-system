@@ -25,7 +25,10 @@ export default async function CustomerLayout({
         <Navbar />
         <div className="flex w-full grow">
           <Sidebar />
-          <main className="flex-grow bg-gray-100 m-2">{children}</main>
+          {/* Main content area with ID for JavaScript manipulation */}
+          <main id="main-content" className="flex-grow bg-gray-100 m-2" style={{ marginLeft: "320px", transition: "margin-left 0.3s ease-in-out" }}>
+            {children}
+          </main>
         </div>
       </div>
     </SessionProvider>

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import { useSession } from "../SessionProvider";
 
 // Define icons for the sidebar
@@ -118,70 +119,146 @@ const navItems = [
 const Sidebar = () => {
   const pathname = usePathname();
   const { user } = useSession();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Load collapse state from localStorage on client side
+  useEffect(() => {
+    const storedState = localStorage.getItem("sidebarCollapsed");
+    if (storedState !== null) {
+      setIsCollapsed(storedState === "true");
+    }
+  }, []);
+
+  // Update main content margin when sidebar state changes
+  useEffect(() => {
+    const mainContent = document.getElementById("main-content");
+    if (mainContent) {
+      if (isCollapsed) {
+        mainContent.style.marginLeft = "64px"; // 16rem = 64px
+      } else {
+        mainContent.style.marginLeft = "320px"; // 80rem = 320px
+      }
+    }
+  }, [isCollapsed]);
+
+  // Toggle sidebar state
+  const toggleSidebar = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem("sidebarCollapsed", newState.toString());
+  };
 
   return (
-    <aside className="bg-[#3e6788] w-80 min-h-screen flex flex-col border-r border-gray-700">
-      {/* User profile section */}
-      <div className="flex flex-col items-center p-6 border-b border-gray-700">
-        <div className="relative w-24 h-24 mb-4">
-          <div className="bg-white rounded-full w-full h-full overflow-hidden">
-            {user?.avatarUrl ? (
-              <Image
-                src={user?.avatarUrl}
-                alt={`${user.firstName} ${user.lastName}`}
-                layout="fill"
-                objectFit="cover"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-white text-2xl font-bold">
-                {user?.firstName?.charAt(0) || ""}
-                {user?.lastName?.charAt(0) || ""}
+    <>
+      {/* Main sidebar */}
+      <aside
+        className={`bg-[#3e6788] fixed top-[88px] left-0 bottom-0 overflow-y-auto flex flex-col border-r border-gray-700 transition-all duration-300 ease-in-out ${
+          isCollapsed ? "w-16" : "w-80"
+        }`}
+      >
+        {/* User profile section - Only show when expanded */}
+        {!isCollapsed && (
+          <div className="flex flex-col items-center p-6 border-b border-gray-700">
+            <div className="relative w-24 h-24 mb-4">
+              <div className="bg-white rounded-full w-full h-full overflow-hidden">
+                {user?.avatarUrl ? (
+                  <Image
+                    src={user?.avatarUrl}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full bg-gray-300 text-gray-700 text-2xl font-bold">
+                    {user?.firstName?.charAt(0) || ""}
+                    {user?.lastName?.charAt(0) || ""}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-        <h2 className="text-2xl font-bold text-white text-center">
-          {user?.firstName} {user?.lastName}
-        </h2>
+            </div>
+            <h2 className="text-2xl font-bold text-white text-center">
+              {user?.firstName} {user?.lastName}
+            </h2>
 
-        {/* Stats section */}
-        <div className="flex w-full mt-4 justify-between border-t border-gray-600 pt-4">
-          <div className="text-center">
-            <span className="block text-2xl font-bold text-white">0</span>
-            <span className="text-sm text-gray-200">Courses</span>
+            {/* Stats section */}
+            <div className="flex w-full mt-4 justify-between border-t border-gray-600 pt-4">
+              <div className="text-center">
+                <span className="block text-2xl font-bold text-white">0</span>
+                <span className="text-sm text-gray-200">Courses</span>
+              </div>
+              <div className="text-center">
+                <span className="block text-2xl font-bold text-white">0</span>
+                <span className="text-sm text-gray-200">Following</span>
+              </div>
+            </div>
           </div>
-          <div className="text-center">
-            <span className="block text-2xl font-bold text-white">0</span>
-            <span className="text-sm text-gray-200">Following</span>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Navigation items */}
-      <nav className="flex-1 py-4">
-        <ul className="space-y-2">
-          {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center px-6 py-3 text-white hover:bg-[#2d4d66] hover:text-white transition-colors duration-200
-                    ${isActive ? "bg-[#2d4d66] font-medium" : ""}`}
-                >
-                  <span
-                    className={`mr-3 ${isActive ? "text-white" : "text-gray-200"}`}
+        {/* Collapsed profile - mini avatar only */}
+        {isCollapsed && (
+          <div className="flex flex-col items-center py-6 border-b border-gray-700">
+            <div className="relative w-10 h-10">
+              <div className="bg-white rounded-full w-full h-full overflow-hidden">
+                {user?.avatarUrl ? (
+                  <Image
+                    src={user?.avatarUrl}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full bg-gray-300 text-gray-700 text-xs font-bold">
+                    {user?.firstName?.charAt(0) || ""}
+                    {user?.lastName?.charAt(0) || ""}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation items */}
+        <nav className="flex-1 py-4">
+          <ul className="space-y-2">
+            {navItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+              return (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center ${isCollapsed ? "justify-center" : "px-6"} py-3 text-white hover:bg-[#2d4d66] hover:text-white transition-colors duration-200
+                      ${isActive ? "bg-[#2d4d66] font-medium" : ""}`}
+                    title={isCollapsed ? item.name : ""}
                   >
-                    <item.icon />
-                  </span>
-                  <span className="text-lg">{item.name}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </aside>
+                    <span
+                      className={`${isCollapsed ? "" : "mr-3"} ${isActive ? "text-white" : "text-gray-200"}`}
+                    >
+                      <item.icon />
+                    </span>
+                    {!isCollapsed && (
+                      <span className="text-lg">{item.name}</span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Toggle button - separate from sidebar to ensure visibility */}
+      <button
+        onClick={toggleSidebar}
+        className={`fixed top-[120px] z-50 bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-3 transition-all duration-300 ${
+          isCollapsed ? "left-16 rounded-r-md" : "left-80 rounded-r-md"
+        }`}
+        style={{
+          boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+        }}
+      >
+        {isCollapsed ? ">" : "<"}
+      </button>
+    </>
   );
 };
 
