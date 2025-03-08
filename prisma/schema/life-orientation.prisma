@@ -1,60 +1,62 @@
 model LifeOrientationExam {
-    id    String   @id @default(uuid())
+    id    String @id @default(uuid())
     title String
     grade Int
-    date  DateTime @default(now())
 
-    question1  String
-    question2  String
-    question3  String
-    question4  String
-    question5  String
-    question6  String
-    question7  String
-    question8  String
-    question9  String
-    question10 String
-    question11 String
-    question12 String
-    question13 String
-    question14 String
-    question15 String
-    question16 String
-    question17 String
-    question18 String
-    question19 String
-    question20 String
-    question21 String
-    question22 String
-    question23 String
-    question24 String
-    question25 String
-    question26 String
-    question27 String
-    question28 String
-    question29 String
-    question30 String
-    question31 String
-    question32 String
-    question33 String
-    question34 String
-    question35 String
-    question36 String
-    question37 String
-    question38 String
-    question39 String
-    question40 String
-    question41 String
-    question42 String
-    question43 String
-    question44 String
-    question45 String
-    question46 String
-    question47 String
-    question48 String
-    question49 String
-    question50 String
+    question1  String?
+    question2  String?
+    question3  String?
+    question4  String?
+    question5  String?
+    question6  String?
+    question7  String?
+    question8  String?
+    question9  String?
+    question10 String?
+    question11 String?
+    question12 String?
+    question13 String?
+    question14 String?
+    question15 String?
+    question16 String?
+    question17 String?
+    question18 String?
+    question19 String?
+    question20 String?
+    question21 String?
+    question22 String?
+    question23 String?
+    question24 String?
+    question25 String?
+    question26 String?
+    question27 String?
+    question28 String?
+    question29 String?
+    question30 String?
+    question31 String?
+    question32 String?
+    question33 String?
+    question34 String?
+    question35 String?
+    question36 String?
+    question37 String?
+    question38 String?
+    question39 String?
+    question40 String?
+    question41 String?
+    question42 String?
+    question43 String?
+    question44 String?
+    question45 String?
+    question46 String?
+    question47 String?
+    question48 String?
+    question49 String?
+    question50 String?
 
     userId String
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
