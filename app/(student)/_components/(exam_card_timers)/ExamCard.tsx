@@ -1,14 +1,8 @@
 "use client";
 
+import { Subject } from "./types";
+
 // Define the Subject interface directly in this file
-export interface Subject {
-  id: number;
-  name: string;
-  code: string;
-  description: string;
-  examDate: Date;
-  color: string;
-}
 
 interface ExamCardProps {
   subject: Subject;
