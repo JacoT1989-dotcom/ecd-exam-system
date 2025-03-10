@@ -75,7 +75,7 @@ export async function login(
       data: {
         id: crypto.randomUUID(),
         userId: existingUser.id,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days, 24 HOURS, 60 SEC, 60 MIN, 1000 MIL SEC
+        expiresAt: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4hrs
       },
     });
 
