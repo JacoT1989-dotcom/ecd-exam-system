@@ -51,7 +51,7 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
         toast.success("Exam submitted successfully", {
           description: "Your exam has been saved.",
         });
-        router.push(`/students/exams/${result.examId}`);
+        router.push(`/students/exam/${result.examId}`);
       } else {
         toast.error("Error submitting exam", {
           description:

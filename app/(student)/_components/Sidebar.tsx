@@ -107,13 +107,17 @@ const SupportIcon = () => (
 
 // Define the sidebar navigation items
 const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: DashboardIcon },
-  { name: "Courses", href: "/courses", icon: CoursesIcon },
-  { name: "Meetings", href: "/meetings", icon: MeetingsIcon },
-  { name: "Quizzes", href: "/quizzes", icon: QuizzesIcon },
-  { name: "Certificates", href: "/certificates", icon: CertificatesIcon },
-  { name: "Financial", href: "/financial", icon: FinancialIcon },
-  { name: "Support", href: "/support", icon: SupportIcon },
+  { name: "Dashboard", href: "/students/dashboard", icon: DashboardIcon },
+  { name: "Courses", href: "/students/courses", icon: CoursesIcon },
+  { name: "Meetings", href: "/students/meetings", icon: MeetingsIcon },
+  { name: "Quizzes", href: "/students/quizzes", icon: QuizzesIcon },
+  {
+    name: "Certificates",
+    href: "/students/certificates",
+    icon: CertificatesIcon,
+  },
+  { name: "Financial", href: "/students/financial", icon: FinancialIcon },
+  { name: "Support", href: "/students/support", icon: SupportIcon },
 ];
 
 const Sidebar = () => {
