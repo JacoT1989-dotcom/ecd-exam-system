@@ -5,7 +5,7 @@ import Image from "next/image";
 import { SessionUser } from "../../SessionProvider";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { updateImages } from "./student-actions";
+import { updateImages } from "./_backend/student-actions";
 import { Input } from "@/components/ui/input";
 
 type ProfileModalProps = {

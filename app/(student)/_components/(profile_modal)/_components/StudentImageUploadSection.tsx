@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { updateImages } from "./student-actions";
+import { updateImages } from "../_backend/student-actions";
 import Image from "next/image";
 
 // UI Components
