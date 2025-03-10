@@ -18,10 +18,7 @@ const Navbar = () => {
       <div className="fixed top-0 left-0 right-0 z-50">
         <nav className="bg-[#3e6788] text-white shadow-lg">
           <div className="flex items-center justify-between text-xs mx-auto w-full py-6 px-8">
-            <Link
-              href={`/${developerId}/developer`}
-              className="flex items-center"
-            >
+            <Link href={`/students`} className="flex items-center">
               {/* Show Student: followed by user ID */}
               <div className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-white bg-clip-text text-transparent">
                 Student: {user?.id}
