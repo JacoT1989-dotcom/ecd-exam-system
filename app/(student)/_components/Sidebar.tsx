@@ -3,10 +3,11 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { useSession } from "../SessionProvider";
+import { useState, useEffect, useRef } from "react";
+import { useSession, SessionUser } from "../SessionProvider";
+import ProfileModal from "./(profile_modal)/ProfileModal";
 
-// Define icons for the sidebar
+// Define icon components
 const DashboardIcon = () => (
   <svg
     className="w-6 h-6"
@@ -21,6 +22,37 @@ const DashboardIcon = () => (
   </svg>
 );
 
+// Pencil edit icon component
+const PencilIcon = () => (
+  <svg
+    className="w-5 h-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+// Eye icon for view profile
+const EyeIcon = () => (
+  <svg
+    className="w-5 h-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+// Other icon components remain unchanged...
 const CoursesIcon = () => (
   <svg
     className="w-6 h-6"
@@ -105,8 +137,15 @@ const SupportIcon = () => (
   </svg>
 );
 
+// Define the navigation items type
+type NavItem = {
+  name: string;
+  href: string;
+  icon: () => JSX.Element;
+};
+
 // Define the sidebar navigation items
-const navItems = [
+const navItems: NavItem[] = [
   { name: "Dashboard", href: "/students/dashboard", icon: DashboardIcon },
   { name: "Courses", href: "/students/courses", icon: CoursesIcon },
   { name: "Meetings", href: "/students/meetings", icon: MeetingsIcon },
@@ -125,11 +164,17 @@ const Sidebar = () => {
   const { user } = useSession();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // State for profile modal
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const profileSectionRef = useRef<HTMLDivElement>(null);
+
   // Load collapse state from localStorage on client side
   useEffect(() => {
-    const storedState = localStorage.getItem("sidebarCollapsed");
-    if (storedState !== null) {
-      setIsCollapsed(storedState === "true");
+    if (typeof window !== "undefined") {
+      const storedState = localStorage.getItem("sidebarCollapsed");
+      if (storedState !== null) {
+        setIsCollapsed(storedState === "true");
+      }
     }
   }, []);
 
@@ -152,6 +197,13 @@ const Sidebar = () => {
     localStorage.setItem("sidebarCollapsed", newState.toString());
   };
 
+  // Handle opening the modal
+  const openProfileModal = (event: React.MouseEvent<HTMLElement>) => {
+    setIsProfileModalOpen(true);
+    // Prevent any parent click events
+    event.stopPropagation();
+  };
+
   return (
     <>
       {/* Main sidebar */}
@@ -161,28 +213,59 @@ const Sidebar = () => {
         }`}
       >
         {/* User profile section - Only show when expanded */}
-        {!isCollapsed && (
-          <div className="flex flex-col items-center p-6 border-b border-gray-700">
-            <div className="relative w-24 h-24 mb-4">
+        {!isCollapsed && user && (
+          <div
+            ref={profileSectionRef}
+            className="flex flex-col items-center p-6 border-b border-gray-700"
+          >
+            {/* Profile image with pencil icon */}
+            <div
+              className="relative w-24 h-24 mb-4 group cursor-pointer"
+              onClick={openProfileModal}
+            >
               <div className="bg-white rounded-full w-full h-full overflow-hidden">
-                {user?.avatarUrl ? (
+                {user.avatarUrl ? (
                   <Image
-                    src={user?.avatarUrl}
+                    src={user.avatarUrl}
                     alt={`${user.firstName} ${user.lastName}`}
                     layout="fill"
                     objectFit="cover"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full bg-gray-300 text-gray-700 text-2xl font-bold">
-                    {user?.firstName?.charAt(0) || ""}
-                    {user?.lastName?.charAt(0) || ""}
+                    {user.firstName.charAt(0)}
+                    {user.lastName.charAt(0)}
                   </div>
                 )}
               </div>
+
+              {/* Pencil icon overlay */}
+              <div className="absolute right-0 bottom-0 bg-cyan-500 rounded-full w-8 h-8 flex items-center justify-center shadow-md border-2 border-white">
+                <PencilIcon />
+              </div>
             </div>
+
             <h2 className="text-2xl font-bold text-white text-center">
-              {user?.firstName} {user?.lastName}
+              {user.firstName} {user.lastName}
             </h2>
+
+            {/* Action buttons */}
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={openProfileModal}
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded flex items-center space-x-1"
+              >
+                <EyeIcon />
+                <span>View Profile</span>
+              </button>
+              <button
+                onClick={openProfileModal}
+                className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded flex items-center space-x-1"
+              >
+                <PencilIcon />
+                <span>Edit</span>
+              </button>
+            </div>
 
             {/* Stats section */}
             <div className="flex w-full mt-4 justify-between border-t border-gray-600 pt-4">
@@ -198,24 +281,46 @@ const Sidebar = () => {
           </div>
         )}
 
-        {/* Collapsed profile - mini avatar only */}
-        {isCollapsed && (
-          <div className="flex flex-col items-center py-6 border-b border-gray-700">
-            <div className="relative w-10 h-10">
+        {/* Collapsed profile - mini avatar only with pencil */}
+        {isCollapsed && user && (
+          <div
+            className="flex flex-col items-center py-6 border-b border-gray-700"
+            ref={profileSectionRef}
+          >
+            <div
+              className="relative w-10 h-10 cursor-pointer"
+              onClick={openProfileModal}
+              title="View or edit profile"
+            >
               <div className="bg-white rounded-full w-full h-full overflow-hidden">
-                {user?.avatarUrl ? (
+                {user.avatarUrl ? (
                   <Image
-                    src={user?.avatarUrl}
+                    src={user.avatarUrl}
                     alt={`${user.firstName} ${user.lastName}`}
                     layout="fill"
                     objectFit="cover"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full bg-gray-300 text-gray-700 text-xs font-bold">
-                    {user?.firstName?.charAt(0) || ""}
-                    {user?.lastName?.charAt(0) || ""}
+                    {user.firstName.charAt(0)}
+                    {user.lastName.charAt(0)}
                   </div>
                 )}
+              </div>
+
+              {/* Small pencil icon */}
+              <div className="absolute -right-1 -bottom-1 bg-cyan-500 rounded-full w-5 h-5 flex items-center justify-center shadow-md border border-white">
+                <svg
+                  className="w-3 h-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+                    fill="white"
+                  />
+                </svg>
               </div>
             </div>
           </div>
@@ -276,6 +381,13 @@ const Sidebar = () => {
           />
         </svg>
       </button>
+
+      {/* Profile Modal */}
+      <ProfileModal
+        user={user}
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </>
   );
 };
