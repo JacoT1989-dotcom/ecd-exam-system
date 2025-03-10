@@ -1,8 +1,12 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { SessionUser } from "../../SessionProvider";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { updateImages } from "./student-actions";
+import { Input } from "@/components/ui/input";
 
 type ProfileModalProps = {
   user: SessionUser | null;
@@ -12,6 +16,10 @@ type ProfileModalProps = {
 
 const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const router = useRouter();
 
   // Close modal when clicking outside of it
   useEffect(() => {
@@ -54,6 +62,82 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
     };
   }, [isOpen, onClose]);
 
+  const handleAvatarClick = () => {
+    if (avatarInputRef.current) {
+      avatarInputRef.current.click();
+    }
+  };
+
+  const handleBackgroundClick = () => {
+    if (backgroundInputRef.current) {
+      backgroundInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "avatar" | "background",
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size
+    const maxSize = type === "avatar" ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+    const sizeLabel = type === "avatar" ? "5MB" : "10MB";
+
+    if (file.size > maxSize) {
+      toast.error(
+        `${type === "avatar" ? "Avatar" : "Background"} image must be less than ${sizeLabel}`,
+      );
+      return;
+    }
+
+    // Validate file type
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Only JPEG, PNG, and WebP formats are supported");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      if (type === "avatar") {
+        formData.append("avatarImage", file);
+      } else {
+        formData.append("backgroundImage", file);
+      }
+
+      const result = await updateImages(formData);
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(
+          `${type === "avatar" ? "Profile picture" : "Background image"} updated successfully`,
+        );
+        // Force refresh to show updated images
+        router.refresh();
+      }
+    } catch (error) {
+      toast.error(`Failed to update ${type} image`);
+      console.error(error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleEditProfileClick = () => {
+    router.push("/students/profile/edit");
+    onClose();
+  };
+
+  // Handle closing the modal by button click
+  const handleCloseButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling up
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -66,10 +150,30 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
         ref={modalRef}
         className="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-2xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
       >
+        {/* Hidden file inputs */}
+        <Input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => handleFileChange(e, "avatar")}
+        />
+        <Input
+          ref={backgroundInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => handleFileChange(e, "background")}
+        />
+
         {/* Header with background and avatar */}
         <div className="relative">
           {/* Cover/Background Image - reduced height */}
-          <div className="h-56 w-full relative bg-gradient-to-r from-cyan-500 to-blue-600">
+          <div
+            className={`h-56 w-full relative bg-gradient-to-r from-cyan-500 to-blue-600 ${!isUploading && "cursor-pointer"}`}
+            onClick={!isUploading ? handleBackgroundClick : undefined}
+            title="Click to change background image"
+          >
             {user?.backgroundUrl && (
               <Image
                 src={user.backgroundUrl}
@@ -79,9 +183,24 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
               />
             )}
 
-            {/* Close button */}
+            {/* Edit background icon */}
+            <div className="absolute bottom-2 right-2 bg-white bg-opacity-50 hover:bg-opacity-70 rounded-full p-1.5 transition-colors">
+              <svg
+                className="w-4 h-4 text-gray-800"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+
+            {/* Close button - FIXED to use handleCloseButtonClick instead */}
             <button
-              onClick={onClose}
+              onClick={handleCloseButtonClick}
               className="absolute top-2 right-2 bg-white bg-opacity-30 hover:bg-opacity-50 rounded-full p-1.5 transition-colors"
             >
               <svg
@@ -103,18 +222,24 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
           {/* Avatar - positioned to overlap the background but smaller */}
           <div className="absolute -bottom-10 left-6">
             <div className="relative">
-              <div className="bg-white p-1 rounded-full shadow-md w-24 h-24">
+              <div
+                className={`bg-white p-1 rounded-full shadow-md w-24 h-24 ${!isUploading && "cursor-pointer"}`}
+                onClick={!isUploading ? handleAvatarClick : undefined}
+                title="Click to change profile picture"
+              >
                 <div className="w-full h-full rounded-full overflow-hidden">
                   {user?.avatarUrl ? (
-                    <Image
-                      src={user.avatarUrl}
-                      alt={`${user?.firstName || ""} ${user?.lastName || ""}`}
-                      width={96}
-                      height={96}
-                      className="object-cover"
-                    />
+                    <div className="w-full h-full rounded-full overflow-hidden">
+                      <Image
+                        src={user.avatarUrl}
+                        alt={`${user?.firstName || ""} ${user?.lastName || ""}`}
+                        width={96}
+                        height={96}
+                        className="rounded-full object-cover w-full h-full"
+                      />
+                    </div>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-700 text-3xl font-bold">
+                    <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-700 text-3xl font-bold rounded-full">
                       {user?.firstName?.charAt(0) || ""}
                       {user?.lastName?.charAt(0) || ""}
                     </div>
@@ -123,18 +248,45 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
               </div>
 
               {/* Edit button on avatar - smaller */}
-              <button className="absolute bottom-1 right-1 bg-cyan-500 hover:bg-cyan-600 text-white rounded-full p-1 shadow-md border-2 border-white">
-                <svg
-                  className="w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
-                    fill="currentColor"
-                  />
-                </svg>
+              <button
+                onClick={handleAvatarClick}
+                disabled={isUploading}
+                className="absolute bottom-1 right-1 bg-cyan-500 hover:bg-cyan-600 text-white rounded-full p-1 shadow-md border-2 border-white"
+              >
+                {isUploading ? (
+                  <svg
+                    className="w-4 h-4 animate-spin"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
@@ -156,7 +308,10 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
 
             {/* Action buttons - smaller */}
             <div className="flex space-x-2">
-              <button className="px-3 py-1 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium">
+              <button
+                onClick={handleEditProfileClick}
+                className="px-3 py-1 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium"
+              >
                 Edit Personal Info
               </button>
             </div>

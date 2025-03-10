@@ -223,16 +223,19 @@ const Sidebar = () => {
               className="relative w-24 h-24 mb-4 group cursor-pointer"
               onClick={openProfileModal}
             >
-              <div className="bg-white rounded-full w-full h-full overflow-hidden">
+              <div className="bg-white rounded-full w-full h-full overflow-hidden ring-2 ring-white">
                 {user.avatarUrl ? (
-                  <Image
-                    src={user.avatarUrl}
-                    alt={`${user.firstName} ${user.lastName}`}
-                    layout="fill"
-                    objectFit="cover"
-                  />
+                  <div className="w-full h-full rounded-full overflow-hidden">
+                    <Image
+                      src={user.avatarUrl}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full bg-gray-300 text-gray-700 text-2xl font-bold">
+                  <div className="flex items-center justify-center h-full bg-gray-300 text-gray-700 text-2xl font-bold rounded-full">
                     {user.firstName.charAt(0)}
                     {user.lastName.charAt(0)}
                   </div>
@@ -292,16 +295,19 @@ const Sidebar = () => {
               onClick={openProfileModal}
               title="View or edit profile"
             >
-              <div className="bg-white rounded-full w-full h-full overflow-hidden">
+              <div className="bg-white rounded-full w-full h-full overflow-hidden ring-1 ring-white">
                 {user.avatarUrl ? (
-                  <Image
-                    src={user.avatarUrl}
-                    alt={`${user.firstName} ${user.lastName}`}
-                    layout="fill"
-                    objectFit="cover"
-                  />
+                  <div className="w-full h-full rounded-full overflow-hidden">
+                    <Image
+                      src={user.avatarUrl}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full bg-gray-300 text-gray-700 text-xs font-bold">
+                  <div className="flex items-center justify-center h-full bg-gray-300 text-gray-700 text-xs font-bold rounded-full">
                     {user.firstName.charAt(0)}
                     {user.lastName.charAt(0)}
                   </div>
