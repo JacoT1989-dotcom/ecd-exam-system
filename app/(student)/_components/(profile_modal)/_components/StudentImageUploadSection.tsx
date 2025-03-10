@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { updateImages } from "../_backend/student-actions";
 import Image from "next/image";
@@ -24,6 +24,18 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deleteStudentImage } from "../_backend/delete-image";
 
 interface StudentImageUploadSectionProps {
   userData: {
@@ -41,6 +53,9 @@ export function StudentImageUploadSection({
   onSuccess,
 }: StudentImageUploadSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeletingAvatar, setIsDeletingAvatar] = useState(false);
+  const [isDeletingBackground, setIsDeletingBackground] = useState(false);
+
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
     userData.avatarUrl || null,
   );
@@ -52,6 +67,12 @@ export function StudentImageUploadSection({
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
+
+  // Update state when userData changes (like after a refresh)
+  useEffect(() => {
+    setAvatarPreview(userData.avatarUrl || null);
+    setBackgroundPreview(userData.backgroundUrl || null);
+  }, [userData.avatarUrl, userData.backgroundUrl]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -127,9 +148,11 @@ export function StudentImageUploadSection({
         toast.error(result.error);
       } else {
         toast.success("Images updated successfully");
+
         // Reset the file inputs but keep the previews
         setAvatarFile(null);
         setBackgroundFile(null);
+
         if (onSuccess) onSuccess();
       }
     } catch (error) {
@@ -150,6 +173,55 @@ export function StudentImageUploadSection({
     setBackgroundPreview(userData.backgroundUrl || null);
     setBackgroundFile(null);
     if (backgroundInputRef.current) backgroundInputRef.current.value = "";
+  };
+
+  // Delete image handlers
+  const handleDeleteAvatar = async () => {
+    setIsDeletingAvatar(true);
+    try {
+      const result = await deleteStudentImage({ imageType: "avatar" });
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Profile avatar deleted successfully");
+        // Clear preview but don't disable upload controls
+        setAvatarPreview(null);
+        setAvatarFile(null);
+
+        // Call the callback function to refresh parent component
+        if (onSuccess) onSuccess();
+      }
+    } catch (error) {
+      toast.error("Failed to delete avatar image");
+      console.error(error);
+    } finally {
+      setIsDeletingAvatar(false);
+    }
+  };
+
+  const handleDeleteBackground = async () => {
+    setIsDeletingBackground(true);
+    try {
+      const result = await deleteStudentImage({ imageType: "background" });
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Background image deleted successfully");
+        // Clear preview but don't disable upload controls
+        setBackgroundPreview(null);
+        setBackgroundFile(null);
+
+        // Call the callback function to refresh parent component
+        if (onSuccess) onSuccess();
+      }
+    } catch (error) {
+      toast.error("Failed to delete background image");
+      console.error(error);
+    } finally {
+      setIsDeletingBackground(false);
+    }
   };
 
   // Get initials for avatar fallback
@@ -196,13 +268,19 @@ export function StudentImageUploadSection({
                     type="button"
                     variant="outline"
                     onClick={() => avatarInputRef.current?.click()}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isDeletingAvatar}
                     className="flex gap-2"
                   >
                     <ImageIcon className="h-4 w-4" />
-                    {avatarFile ? "Change" : "Select"} Avatar
+                    {avatarFile
+                      ? "Change"
+                      : avatarPreview
+                        ? "Replace"
+                        : "Select"}{" "}
+                    Avatar
                   </Button>
 
+                  {/* Remove from previews/cancel upload button */}
                   {avatarFile && (
                     <Button
                       type="button"
@@ -214,6 +292,46 @@ export function StudentImageUploadSection({
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
+
+                  {/* Delete from server button - only show if there's an existing image on server */}
+                  {avatarPreview && !avatarFile && userData.avatarUrl && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={isSubmitting || isDeletingAvatar}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          {isDeletingAvatar ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Delete profile avatar?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. The image will be
+                            removed from your profile.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteAvatar}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
 
                 <Input
@@ -222,7 +340,7 @@ export function StudentImageUploadSection({
                   accept="image/jpeg,image/png,image/webp"
                   onChange={handleAvatarChange}
                   className="hidden"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isDeletingAvatar}
                 />
 
                 <p className="text-xs text-gray-500">
@@ -261,13 +379,19 @@ export function StudentImageUploadSection({
                 type="button"
                 variant="outline"
                 onClick={() => backgroundInputRef.current?.click()}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isDeletingBackground}
                 className="flex gap-2"
               >
                 <ImageIcon className="h-4 w-4" />
-                {backgroundFile ? "Change" : "Select"} Background
+                {backgroundFile
+                  ? "Change"
+                  : backgroundPreview
+                    ? "Replace"
+                    : "Select"}{" "}
+                Background
               </Button>
 
+              {/* Remove from previews/cancel upload button */}
               {backgroundFile && (
                 <Button
                   type="button"
@@ -280,13 +404,55 @@ export function StudentImageUploadSection({
                 </Button>
               )}
 
+              {/* Delete from server button - only show if there's an existing image on server */}
+              {backgroundPreview &&
+                !backgroundFile &&
+                userData.backgroundUrl && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isSubmitting || isDeletingBackground}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        {isDeletingBackground ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Delete background image?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. The image will be
+                          removed from your profile.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteBackground}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+
               <Input
                 ref={backgroundInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handleBackgroundChange}
                 className="hidden"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isDeletingBackground}
               />
             </div>
 
@@ -300,7 +466,12 @@ export function StudentImageUploadSection({
             <Button
               type="submit"
               size="sm"
-              disabled={isSubmitting || (!avatarFile && !backgroundFile)}
+              disabled={
+                isSubmitting ||
+                isDeletingAvatar ||
+                isDeletingBackground ||
+                (!avatarFile && !backgroundFile)
+              }
               className="bg-cyan-600 hover:bg-cyan-700 text-white"
             >
               {isSubmitting ? (

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { updateImages } from "./_backend/student-actions";
 import { Input } from "@/components/ui/input";
+import { deleteStudentImage } from "./_backend/delete-image";
 
 type ProfileModalProps = {
   user: SessionUser | null;
@@ -19,7 +20,24 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<"avatar" | "background" | null>(
+    null,
+  );
   const router = useRouter();
+
+  // Local state to track current images (in case they're deleted during this session)
+  const [currentAvatar, setCurrentAvatar] = useState<string | null | undefined>(
+    user?.avatarUrl,
+  );
+  const [currentBackground, setCurrentBackground] = useState<
+    string | null | undefined
+  >(user?.backgroundUrl);
+
+  // Update local state when user data changes
+  useEffect(() => {
+    setCurrentAvatar(user?.avatarUrl);
+    setCurrentBackground(user?.backgroundUrl);
+  }, [user?.avatarUrl, user?.backgroundUrl]);
 
   // Close modal when clicking outside of it
   useEffect(() => {
@@ -116,6 +134,15 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
         toast.success(
           `${type === "avatar" ? "Profile picture" : "Background image"} updated successfully`,
         );
+
+        // Update local state to match new uploaded image
+        if (type === "avatar" && result.avatarUrl) {
+          setCurrentAvatar(result.avatarUrl);
+        }
+        if (type === "background" && result.backgroundUrl) {
+          setCurrentBackground(result.backgroundUrl);
+        }
+
         // Force refresh to show updated images
         router.refresh();
       }
@@ -124,6 +151,41 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
       console.error(error);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Delete image handler
+  const handleDeleteImage = async (type: "avatar" | "background") => {
+    if (!confirm(`Are you sure you want to delete your ${type} image?`)) {
+      return;
+    }
+
+    setIsDeleting(type);
+    try {
+      const result = await deleteStudentImage({ imageType: type });
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(
+          `${type === "avatar" ? "Profile picture" : "Background image"} deleted successfully`,
+        );
+
+        // Update local state to reflect deletion
+        if (type === "avatar") {
+          setCurrentAvatar(null);
+        } else {
+          setCurrentBackground(null);
+        }
+
+        // Force refresh to show updated images
+        router.refresh();
+      }
+    } catch (error) {
+      toast.error(`Failed to delete ${type} image`);
+      console.error(error);
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -165,35 +227,97 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
         <div className="relative">
           {/* Cover/Background Image - reduced height */}
           <div
-            className={`h-56 w-full relative bg-gradient-to-r from-cyan-500 to-blue-600 ${!isUploading && "cursor-pointer"}`}
-            onClick={!isUploading ? handleBackgroundClick : undefined}
+            className={`h-56 w-full relative bg-gradient-to-r from-cyan-500 to-blue-600 ${!isUploading && isDeleting !== "background" && "cursor-pointer"}`}
+            onClick={
+              !isUploading && isDeleting !== "background"
+                ? handleBackgroundClick
+                : undefined
+            }
             title="Click to change background image"
           >
-            {user?.backgroundUrl && (
+            {currentBackground && (
               <Image
-                src={user.backgroundUrl}
+                src={currentBackground}
                 alt="Profile background"
                 fill
                 className="object-cover"
               />
             )}
 
-            {/* Edit background icon */}
-            <div className="absolute bottom-2 right-2 bg-white bg-opacity-50 hover:bg-opacity-70 rounded-full p-1.5 transition-colors">
-              <svg
-                className="w-4 h-4 text-gray-800"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            {/* Controls for background */}
+            <div className="absolute bottom-2 right-2 flex">
+              {/* Edit button */}
+              <div
+                className="bg-white bg-opacity-50 hover:bg-opacity-70 rounded-full p-1.5 transition-colors mr-1 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleBackgroundClick();
+                }}
+                title="Edit background image"
               >
-                <path
-                  d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
-                  fill="currentColor"
-                />
-              </svg>
+                <svg
+                  className="w-4 h-4 text-gray-800"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
+
+              {/* Delete button - only show if there's a background image */}
+              {currentBackground && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteImage("background");
+                  }}
+                  disabled={isUploading || isDeleting !== null}
+                  className="bg-white bg-opacity-50 hover:bg-opacity-70 rounded-full p-1.5 transition-colors cursor-pointer"
+                  title="Delete background image"
+                >
+                  {isDeleting === "background" ? (
+                    <svg
+                      className="w-4 h-4 animate-spin text-gray-800"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4 text-red-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  )}
+                </button>
+              )}
             </div>
 
-            {/* Close button - FIXED to use handleCloseButtonClick instead */}
+            {/* Close button */}
             <button
               onClick={handleCloseButtonClick}
               className="absolute top-2 right-2 bg-white bg-opacity-30 hover:bg-opacity-50 rounded-full p-1.5 transition-colors"
@@ -218,15 +342,19 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
           <div className="absolute -bottom-10 left-6">
             <div className="relative">
               <div
-                className={`bg-white p-1 rounded-full shadow-md w-24 h-24 ${!isUploading && "cursor-pointer"}`}
-                onClick={!isUploading ? handleAvatarClick : undefined}
+                className={`bg-white p-1 rounded-full shadow-md w-24 h-24 ${!isUploading && isDeleting !== "avatar" && "cursor-pointer"}`}
+                onClick={
+                  !isUploading && isDeleting !== "avatar"
+                    ? handleAvatarClick
+                    : undefined
+                }
                 title="Click to change profile picture"
               >
                 <div className="w-full h-full rounded-full overflow-hidden">
-                  {user?.avatarUrl ? (
+                  {currentAvatar ? (
                     <div className="w-full h-full rounded-full overflow-hidden">
                       <Image
-                        src={user.avatarUrl}
+                        src={currentAvatar}
                         alt={`${user?.firstName || ""} ${user?.lastName || ""}`}
                         width={96}
                         height={96}
@@ -242,47 +370,102 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
                 </div>
               </div>
 
-              {/* Edit button on avatar - smaller */}
-              <button
-                onClick={handleAvatarClick}
-                disabled={isUploading}
-                className="absolute bottom-1 right-1 bg-cyan-500 hover:bg-cyan-600 text-white rounded-full p-1 shadow-md border-2 border-white"
-              >
-                {isUploading ? (
-                  <svg
-                    className="w-4 h-4 animate-spin"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+              {/* Controls for avatar */}
+              <div className="absolute -bottom-1 -right-1 flex space-x-1">
+                {/* Edit button on avatar - smaller */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAvatarClick();
+                  }}
+                  disabled={isUploading || isDeleting !== null}
+                  className="bg-cyan-500 hover:bg-cyan-600 text-white rounded-full p-1 shadow-md border-2 border-white"
+                  title="Change profile picture"
+                >
+                  {isUploading ? (
+                    <svg
+                      className="w-4 h-4 animate-spin"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  )}
+                </button>
+
+                {/* Delete button - only show if there's an avatar image */}
+                {currentAvatar && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteImage("avatar");
+                    }}
+                    disabled={isUploading || isDeleting !== null}
+                    className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md border-2 border-white"
+                    title="Delete profile picture"
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-4 h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
-                      fill="currentColor"
-                    />
-                  </svg>
+                    {isDeleting === "avatar" ? (
+                      <svg
+                        className="w-4 h-4 animate-spin"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    )}
+                  </button>
                 )}
-              </button>
+              </div>
             </div>
           </div>
         </div>
