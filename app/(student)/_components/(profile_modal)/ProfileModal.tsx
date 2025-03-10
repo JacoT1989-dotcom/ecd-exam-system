@@ -127,11 +127,6 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
     }
   };
 
-  const handleEditProfileClick = () => {
-    router.push("/students/profile/edit");
-    onClose();
-  };
-
   // Handle closing the modal by button click
   const handleCloseButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event from bubbling up
@@ -304,16 +299,6 @@ const ProfileModal = ({ user, isOpen, onClose }: ProfileModalProps) => {
               <p className="text-xs text-gray-600 font-medium">
                 {formatRole(user?.role)}
               </p>
-            </div>
-
-            {/* Action buttons - smaller */}
-            <div className="flex space-x-2">
-              <button
-                onClick={handleEditProfileClick}
-                className="px-3 py-1 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium"
-              >
-                Edit Personal Info
-              </button>
             </div>
           </div>
 
