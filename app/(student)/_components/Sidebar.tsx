@@ -148,14 +148,14 @@ type NavItem = {
 const navItems: NavItem[] = [
   { name: "My Account", href: "/students/dashboard", icon: DashboardIcon },
   { name: "Exams Completed", href: "/students/courses", icon: CoursesIcon },
-  { name: "Next Exam", href: "/students/meetings", icon: MeetingsIcon },
+  { name: "Exam Calendar", href: "/students/meetings", icon: MeetingsIcon },
   { name: "Past Papers", href: "/students/quizzes", icon: QuizzesIcon },
   {
-    name: "Certificates",
+    name: "Scientific Calculator",
     href: "/students/certificates",
     icon: CertificatesIcon,
   },
-  { name: "Financial", href: "/students/financial", icon: FinancialIcon },
+  { name: "Todo List", href: "/students/financial", icon: FinancialIcon },
   { name: "Support", href: "/students/support", icon: SupportIcon },
 ];
 
