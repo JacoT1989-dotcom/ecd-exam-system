@@ -22,9 +22,11 @@ const ModernUnderDevelopment = () => {
       <div className="max-w-5xl mx-auto space-y-20">
         {/* Hero Section */}
         <div className="text-center space-y-8">
-          <div className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-accent/10 text-accent mb-4">
+          <div className="inline-flex items-center justify-center px-4 py-2 rounded-full  text-black mb-4">
             <Clock className="h-4 w-4 mr-2" />
-            <span className="text-sm font-medium">We're making progress</span>
+            <span className="text-sm font-medium">
+              We&apos;re making progress
+            </span>
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent via-purple-500 to-blue-600">
@@ -33,7 +35,7 @@ const ModernUnderDevelopment = () => {
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             Our team is crafting a powerful new experience with attention to
-            every detail. We're almost there.
+            every detail. We&apos;re almost there.
           </p>
 
           <div className="max-w-xl mx-auto pt-8">
@@ -56,7 +58,8 @@ const ModernUnderDevelopment = () => {
           <div className="text-center space-y-3">
             <h2 className="text-2xl font-bold">What to Expect</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              We're working on these key areas to deliver an exceptional product
+              We&apos;re working on these key areas to deliver an exceptional
+              product
             </p>
           </div>
 
@@ -113,8 +116,8 @@ const ModernUnderDevelopment = () => {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Stay Updated</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              We're working hard to bring this section online soon. Check back
-              regularly for updates on our progress.
+              We&apos;re working hard to bring this section online soon. Check
+              back regularly for updates on our progress.
             </p>
           </div>
 
