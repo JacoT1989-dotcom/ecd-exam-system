@@ -146,10 +146,10 @@ type NavItem = {
 
 // Define the sidebar navigation items
 const navItems: NavItem[] = [
-  { name: "Dashboard", href: "/students/dashboard", icon: DashboardIcon },
-  { name: "Courses", href: "/students/courses", icon: CoursesIcon },
-  { name: "Meetings", href: "/students/meetings", icon: MeetingsIcon },
-  { name: "Quizzes", href: "/students/quizzes", icon: QuizzesIcon },
+  { name: "My Account", href: "/students/dashboard", icon: DashboardIcon },
+  { name: "Exams Completed", href: "/students/courses", icon: CoursesIcon },
+  { name: "Next Exam", href: "/students/meetings", icon: MeetingsIcon },
+  { name: "Past Papers", href: "/students/quizzes", icon: QuizzesIcon },
   {
     name: "Certificates",
     href: "/students/certificates",
