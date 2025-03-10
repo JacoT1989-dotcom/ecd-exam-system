@@ -16,7 +16,9 @@ const LanguageSelectionModal = ({
     const formattedSubjectName = subject.name
       .toLowerCase()
       .replace(/\s+/g, "-");
-    const examUrl = `/students/exam/subjects/${formattedSubjectName}-${language}`;
+
+    // Add subject name and code to the URL as query parameters
+    const examUrl = `/students/exam/subjects/${formattedSubjectName}-${language}?subjectName=${encodeURIComponent(subject.name)}&subjectCode=${encodeURIComponent(subject.code)}`;
     window.location.href = examUrl;
   };
 

@@ -28,14 +28,18 @@ import { lifeOrientationExamFormSchema } from "../validations";
 import { getDefaultLifeOrientationExamValues } from "../validations";
 import { createLifeOrientationExam } from "../actions";
 
-export function ExamTabs() {
+// Update the ExamTabs function signature to accept the props
+export function ExamTabs({ subjectName = "", subjectCode = "" }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // Initialize form with default values
+  // Initialize form with default values, using the subject name for the title
   const form = useForm<LifeOrientationExamFormType>({
     resolver: zodResolver(lifeOrientationExamFormSchema),
-    defaultValues: getDefaultLifeOrientationExamValues(),
+    defaultValues: {
+      ...getDefaultLifeOrientationExamValues(),
+      title: subjectName ? `${subjectName} ${subjectCode} Exam` : "",
+    },
   });
 
   const onSubmit = async (data: LifeOrientationExamFormType) => {
@@ -137,9 +141,21 @@ export function ExamTabs() {
                       <FormControl>
                         <Input
                           placeholder="Enter exam title (e.g., Term 3 Life Orientation Exam)"
+                          readOnly={!!subjectName} // Make field read-only if subject name is provided
+                          className={
+                            !!subjectName
+                              ? "bg-gray-100 cursor-not-allowed"
+                              : ""
+                          }
                           {...field}
                         />
                       </FormControl>
+                      {!!subjectName && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          This field is automatically populated based on the
+                          selected exam.
+                        </p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
