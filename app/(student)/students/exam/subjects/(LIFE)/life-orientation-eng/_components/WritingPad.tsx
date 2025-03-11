@@ -131,7 +131,13 @@ const WritingPad: React.FC<WritingPadProps> = ({
         }
       }
     }
-  }, [currentPageIndex, pages]);
+  }, [
+    currentPageIndex,
+    pages,
+    canvasContext,
+    currentPage.imageData,
+    currentPage.points,
+  ]);
 
   const clearCurrentPage = () => {
     if (!canvasRef.current || !canvasContext) return;
@@ -302,15 +308,7 @@ const WritingPad: React.FC<WritingPadProps> = ({
               title="Clear current page"
             >
               <LucideTrash2 className="h-4 w-4" />
-              <span>Clear</span>
-            </button>
-            <button
-              onClick={downloadAllPages}
-              className="flex items-center gap-1 px-3 py-1.5 bg-[#3e6788] text-white rounded-md hover:bg-[#2c4a63] transition-colors text-sm"
-              title="Download current page"
-            >
-              <LucideDownload className="h-4 w-4" />
-              <span>Download</span>
+              <span>Clear Page</span>
             </button>
           </div>
         </div>
