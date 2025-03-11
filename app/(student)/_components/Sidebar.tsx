@@ -149,7 +149,6 @@ const navItems: NavItem[] = [
   { name: "My Account", href: "/students/my-account", icon: DashboardIcon },
   { name: "Exams Completed", href: "/students/completed", icon: CoursesIcon },
   { name: "Exam Calendar", href: "/students/calendar", icon: MeetingsIcon },
-  { name: "Past Papers", href: "/students/past-papers", icon: QuizzesIcon },
   {
     name: "Scientific Calculator",
     href: "/students/calculator",
