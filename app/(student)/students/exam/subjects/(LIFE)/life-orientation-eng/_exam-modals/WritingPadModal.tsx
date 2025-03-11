@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import WritingPad from "./_components/WritingPad";
+import WritingPad from "../_components/WritingPad";
 
 interface WritingPadModalProps {
   isOpen: boolean;

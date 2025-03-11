@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LucidePencil } from "lucide-react";
-import WritingPadModal from "../WritingPadModal";
+import WritingPadModal from "../_exam-modals/WritingPadModal";
 
 interface WritingPadButtonProps {
   className?: string;
