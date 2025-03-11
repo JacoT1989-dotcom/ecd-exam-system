@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { LucideEdit, LucideTrash2, LucideCheck } from "lucide-react";
+import {
+  LucideEdit,
+  LucideTrash2,
+  LucideCheck,
+  LucideSave,
+} from "lucide-react";
+import { saveHandwriting } from "./actions";
 
 interface Point {
   x: number;
@@ -21,6 +27,7 @@ interface Point {
 
 interface HandwritingRecognitionProps {
   onTextRecognized?: (text: string) => void;
+  onSubmitSuccess?: (data: { imageUrl: string; entryId: string }) => void;
   width?: number;
   height?: number;
   className?: string;
@@ -29,6 +36,7 @@ interface HandwritingRecognitionProps {
 
 const HandwritingRecognition: React.FC<HandwritingRecognitionProps> = ({
   onTextRecognized,
+  onSubmitSuccess,
   width = 600,
   height = 300,
   className = "",
@@ -42,6 +50,7 @@ const HandwritingRecognition: React.FC<HandwritingRecognitionProps> = ({
     useState<CanvasRenderingContext2D | null>(null);
   const [points, setPoints] = useState<Point[]>([]);
   const [handwritingApiReady, setHandwritingApiReady] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     function setupCanvas() {
@@ -142,8 +151,6 @@ const HandwritingRecognition: React.FC<HandwritingRecognitionProps> = ({
     setIsDrawing(false);
   };
 
-  // Remove the getEventCoordinates function as we're handling coordinates directly in draw and startDrawing
-
   const recognizeText = async () => {
     if (!canvasRef.current) {
       toast.error("Handwriting recognition is not initialized");
@@ -191,6 +198,67 @@ const HandwritingRecognition: React.FC<HandwritingRecognitionProps> = ({
         console.error("Failed to copy text:", err);
         toast.error("Failed to copy text");
       });
+  };
+
+  const submitHandwriting = async () => {
+    if (!canvasRef.current) {
+      toast.error("Canvas is not initialized");
+      return;
+    }
+
+    if (points.length === 0) {
+      toast.error("Please write something first");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvasRef.current?.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Failed to convert canvas to image"));
+          }
+        }, "image/png");
+      });
+
+      // Create form data to send to server action
+      const formData = new FormData();
+      formData.append("canvasImage", blob, "handwriting.png");
+      formData.append("points", JSON.stringify(points));
+
+      if (recognizedText) {
+        formData.append("recognizedText", recognizedText);
+      }
+
+      // Call the server action to save the handwriting
+      const result = await saveHandwriting(formData);
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      toast.success("Handwriting saved successfully");
+
+      // Trigger callback if provided
+      if (onSubmitSuccess && result.success) {
+        onSubmitSuccess({
+          imageUrl: result.imageUrl,
+          entryId: result.entryId,
+        });
+      }
+
+      // Optionally clear the canvas after successful submission
+      // clearCanvas();
+    } catch (error) {
+      console.error("Failed to submit handwriting:", error);
+      toast.error("Failed to save handwriting");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -258,13 +326,22 @@ const HandwritingRecognition: React.FC<HandwritingRecognitionProps> = ({
             />
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-2 sm:flex-row">
           <Button
             onClick={recognizeText}
             className="w-full"
             disabled={points.length === 0}
           >
             Recognize Text
+          </Button>
+          <Button
+            onClick={submitHandwriting}
+            className="w-full"
+            disabled={points.length === 0 || isSubmitting}
+            variant="default"
+          >
+            {isSubmitting ? "Saving..." : "Save Handwriting"}
+            {!isSubmitting && <LucideSave className="ml-2 h-4 w-4" />}
           </Button>
         </CardFooter>
       </Card>

@@ -1,0 +1,11 @@
+model HandwritingEntry {
+    id             String   @id @default(cuid())
+    imageUrl       String // URL to the stored handwriting image in Vercel Blob
+    recognizedText String? // The text recognized from the handwriting (optional as recognition might fail)
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+    userId         String?  @map("user_id") // Optional: link to a user if you have authentication
+    user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+}
