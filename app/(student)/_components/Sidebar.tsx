@@ -271,7 +271,7 @@ const Sidebar = () => {
             </div>
 
             {/* Stats section */}
-            <div className="flex w-full mt-4 justify-between border-t border-gray-600 pt-4">
+            <div className="flex w-full mt-4 justify-center space-x-20 border-t border-gray-600 pt-4">
               <div className="text-center">
                 <span className="block text-2xl font-bold text-white">12</span>
                 <span className="text-sm text-gray-200">Grade</span>
