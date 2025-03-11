@@ -1,25 +1,36 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "../../SessionProvider";
+import LanguageSelectionModal from "../../_components/(exam_card_timers)/LanguageSelectionModal";
+import UnavailableExamModal from "../../_components/(exam_card_timers)/UnavailableExamModal";
 
-// Define Subject type
-type Subject = {
+// Define types locally in this file
+interface Subject {
   id: number;
   name: string;
   code: string;
   description: string;
   examDate: Date;
   color: string;
-};
+}
+
+interface TimeRemaining {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  isAvailable: boolean;
+}
 
 const ExamKanbanBoard = () => {
   const { user } = useSession();
   const [greeting, setGreeting] = useState("Good day");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isClient, setIsClient] = useState(false);
-
-  // Track completed exams (normally this would come from a database)
   const [completedExams, setCompletedExams] = useState<number[]>([]);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showUnavailableModal, setShowUnavailableModal] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
   // Set isClient to true when component mounts (client-side only)
   useEffect(() => {
@@ -80,14 +91,7 @@ const ExamKanbanBoard = () => {
       name: "Life Orientation",
       code: "LIFE",
       description: "Life Orientation",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate(),
-        9,
-        7,
-        0,
-      ),
+      examDate: lifeOrientationDate, // Make it already available
       color: "bg-green-500",
     },
     {
@@ -193,7 +197,7 @@ const ExamKanbanBoard = () => {
   }, [isClient]);
 
   // Function to calculate remaining time until exam
-  const calculateTimeRemaining = (examDate: Date) => {
+  const calculateTimeRemaining = (examDate: Date): TimeRemaining => {
     // If not on client yet, return a default state to prevent hydration errors
     if (!isClient) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0, isAvailable: false };
@@ -221,7 +225,7 @@ const ExamKanbanBoard = () => {
   };
 
   // Format time remaining as HH:MM:SS with days in brackets
-  const formatTimeRemaining = (timeObj: any) => {
+  const formatTimeRemaining = (timeObj: TimeRemaining): string => {
     if (!isClient) {
       return "Loading..."; // Only show a placeholder during server rendering
     }
@@ -247,7 +251,7 @@ const ExamKanbanBoard = () => {
   };
 
   // Format exam date for display
-  const formatExamDate = (date: Date) => {
+  const formatExamDate = (date: Date): string => {
     const month = date.toLocaleString("en-US", { month: "short" });
     const day = date.getDate();
     const hour = date.getHours();
@@ -258,13 +262,18 @@ const ExamKanbanBoard = () => {
     return `${month} ${day}, ${displayHour}:${minute} ${period}`;
   };
 
-  // Function to handle starting an exam
-  const handleStartExam = (subject: Subject) => {
-    // In a real app, this would navigate to the exam page
-    alert(`Starting exam: ${subject.name}`);
+  // Handle clicking on an exam card
+  const handleExamClick = (subject: Subject): void => {
+    const timeRemaining = calculateTimeRemaining(subject.examDate);
+    setSelectedSubject(subject);
 
-    // For demo purposes, we could eventually mark it as completed
-    // setCompletedExams([...completedExams, subject.id]);
+    if (timeRemaining.isAvailable && user) {
+      // Show language selection modal for available exams
+      setShowLanguageModal(true);
+    } else {
+      // Show unavailable modal for unavailable exams
+      setShowUnavailableModal(true);
+    }
   };
 
   // Function to organize subjects into kanban columns
@@ -307,7 +316,8 @@ const ExamKanbanBoard = () => {
     return (
       <div
         key={subject.id}
-        className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col"
+        className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer"
+        onClick={() => handleExamClick(subject)}
       >
         <div className={`${subject.color} h-1.5 w-full`}></div>
         <div className="p-3 flex flex-col">
@@ -343,7 +353,10 @@ const ExamKanbanBoard = () => {
               </div>
             ) : isAvailable ? (
               <button
-                onClick={() => handleStartExam(subject)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent the card click from triggering
+                  handleExamClick(subject);
+                }}
                 className="w-full py-1 px-2 rounded text-xs font-medium text-center bg-[#3e6788] hover:bg-[#2d4d66] text-white transition-colors duration-300"
               >
                 Start Exam
@@ -403,6 +416,23 @@ const ExamKanbanBoard = () => {
         {renderColumn("In Progress", inProgress, "bg-green-600")}
         {renderColumn("Completed", completed, "bg-gray-600")}
       </div>
+
+      {/* Language Selection Modal */}
+      {showLanguageModal && selectedSubject && (
+        <LanguageSelectionModal
+          subject={selectedSubject}
+          onClose={() => setShowLanguageModal(false)}
+        />
+      )}
+
+      {/* Unavailable Exam Modal */}
+      {showUnavailableModal && selectedSubject && (
+        <UnavailableExamModal
+          subject={selectedSubject}
+          formatExamDate={formatExamDate}
+          onClose={() => setShowUnavailableModal(false)}
+        />
+      )}
     </div>
   );
 };
