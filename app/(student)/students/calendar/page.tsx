@@ -1,10 +1,10 @@
 import React from "react";
-import UnderDevelopment from "../exam/[examId]/_components/UnderDevelopment";
+import ExamCalendar from "./ExamCalendar";
 
 const page = () => {
   return (
     <div>
-      <UnderDevelopment />
+      <ExamCalendar />
     </div>
   );
 };

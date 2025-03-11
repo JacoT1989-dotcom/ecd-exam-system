@@ -1,0 +1,128 @@
+import { Subject } from "./types";
+
+// Calculate base date for the exam dates
+const baseDate = new Date();
+
+// Sample subjects data
+export const subjects: Subject[] = [
+  {
+    id: 1,
+    name: "Mathematics",
+    code: "MTH301",
+    description: "Advanced Calculus and Linear Algebra",
+    examDate: new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate() + 2,
+      8,
+      7,
+      0,
+    ),
+    color: "bg-blue-500",
+  },
+  {
+    id: 2,
+    name: "Physics",
+    code: "PHY201",
+    description: "Classical Mechanics and Electromagnetism",
+    examDate: new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate() + 5,
+      8,
+      7,
+      0,
+    ),
+    color: "bg-purple-500",
+  },
+  {
+    id: 3,
+    name: "Life Orientation",
+    code: "LIFE",
+    description: "Life Orientation",
+    examDate: new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate(),
+      9,
+      7,
+      0,
+    ),
+    color: "bg-green-500",
+  },
+  {
+    id: 4,
+    name: "Biology",
+    code: "BIO101",
+    description: "Introduction to Molecular Biology",
+    examDate: new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate() + 1,
+      8,
+      7,
+      0,
+    ),
+    color: "bg-yellow-500",
+  },
+  {
+    id: 5,
+    name: "Chemistry",
+    code: "CHM202",
+    description: "Organic Chemistry",
+    examDate: new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate() + 3,
+      8,
+      7,
+      0,
+    ),
+    color: "bg-red-500",
+  },
+  {
+    id: 6,
+    name: "History",
+    code: "HIS305",
+    description: "Modern World History",
+    examDate: new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate() + 7,
+      8,
+      7,
+      0,
+    ),
+    color: "bg-indigo-500",
+  },
+  {
+    id: 7,
+    name: "Literature",
+    code: "LIT201",
+    description: "Contemporary Fiction Analysis",
+    examDate: new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate() + 4,
+      8,
+      7,
+      0,
+    ),
+    color: "bg-pink-500",
+  },
+  {
+    id: 8,
+    name: "Economics",
+    code: "ECO301",
+    description: "Macroeconomics and Financial Markets",
+    examDate: new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate() + 6,
+      8,
+      7,
+      0,
+    ),
+    color: "bg-teal-500",
+  },
+];
