@@ -287,7 +287,7 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="New York"
+                        placeholder="Cape Town"
                         {...field}
                         disabled={isPending}
                         className={
@@ -337,7 +337,7 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="United States"
+                        placeholder="South Africa"
                         {...field}
                         disabled={isPending}
                         className={
