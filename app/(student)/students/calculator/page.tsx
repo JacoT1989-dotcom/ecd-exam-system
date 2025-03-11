@@ -1,10 +1,10 @@
 import React from "react";
-import UnderDevelopment from "../exam/[examId]/_components/UnderDevelopment";
+import ScientificCalculator from "./Calculator";
 
 const page = () => {
   return (
     <div>
-      <UnderDevelopment />
+      <ScientificCalculator />
     </div>
   );
 };
