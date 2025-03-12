@@ -198,35 +198,35 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
           >
             <TabsList className="grid grid-cols-5 mb-6">
               <TabsTrigger value="section1">
-                Section 1
+                Afdeling 1
                 <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
                   {getSectionCompletion(1, 10).completed}/
                   {getSectionCompletion(1, 10).total}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="section2">
-                Section 2
+                Afdeling 2
                 <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
                   {getSectionCompletion(11, 20).completed}/
                   {getSectionCompletion(11, 20).total}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="section3">
-                Section 3
+                Afdeling 3
                 <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
                   {getSectionCompletion(21, 30).completed}/
                   {getSectionCompletion(21, 30).total}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="section4">
-                Section 4
+                Afdeling 4
                 <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
                   {getSectionCompletion(31, 40).completed}/
                   {getSectionCompletion(31, 40).total}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="section5">
-                Section 5
+                Afdeling 5
                 <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
                   {getSectionCompletion(41, 50).completed}/
                   {getSectionCompletion(41, 50).total}
@@ -239,7 +239,7 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                 <SectionOne form={form} />
                 <div className="mt-6 flex justify-end">
                   <Button type="button" onClick={goToNextSection}>
-                    Next Section
+                    Volgende Afdeling
                   </Button>
                 </div>
               </TabsContent>
@@ -252,10 +252,10 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                     variant="outline"
                     onClick={goToPreviousSection}
                   >
-                    Previous Section
+                    Vorige Afdeling
                   </Button>
                   <Button type="button" onClick={goToNextSection}>
-                    Next Section
+                    Volgende Afdeling
                   </Button>
                 </div>
               </TabsContent>
@@ -268,10 +268,10 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                     variant="outline"
                     onClick={goToPreviousSection}
                   >
-                    Previous Section
+                    Vorige Afdeling
                   </Button>
                   <Button type="button" onClick={goToNextSection}>
-                    Next Section
+                    Volgende Afdeling
                   </Button>
                 </div>
               </TabsContent>
@@ -284,10 +284,10 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                     variant="outline"
                     onClick={goToPreviousSection}
                   >
-                    Previous Section
+                    Vorige Afdeling
                   </Button>
                   <Button type="button" onClick={goToNextSection}>
-                    Next Section
+                    Volgende Afdeling
                   </Button>
                 </div>
               </TabsContent>
@@ -300,7 +300,7 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                     variant="outline"
                     onClick={goToPreviousSection}
                   >
-                    Previous Section
+                    Vorige Afdeling
                   </Button>
                   <Button
                     type="submit"
