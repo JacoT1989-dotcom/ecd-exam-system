@@ -337,11 +337,11 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
               {/* Section breakdown */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
                 {[
-                  { name: "Section 1", start: 1, end: 10 },
-                  { name: "Section 2", start: 11, end: 20 },
-                  { name: "Section 3", start: 21, end: 30 },
-                  { name: "Section 4", start: 31, end: 40 },
-                  { name: "Section 5", start: 41, end: 50 },
+                  { name: "Afdeling 1", start: 1, end: 10 },
+                  { name: "Afdeling 2", start: 11, end: 20 },
+                  { name: "Afdeling 3", start: 21, end: 30 },
+                  { name: "Afdeling 4", start: 31, end: 40 },
+                  { name: "Afdeling 5", start: 41, end: 50 },
                 ].map((section) => {
                   const { completed, total, percentage } = getSectionCompletion(
                     section.start,
