@@ -28,7 +28,7 @@ export function SectionOne({ form }: SectionOneProps) {
       {/* Question 1 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          1. What is the main purpose of the South African Constitution?
+          1. Wat is die hoofdoel van die Suid-Afrikaanse Grondwet?
         </h3>
         <FormField
           control={form.control}
@@ -45,14 +45,16 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>A. To protect the rights of citizens</FormLabel>
+                    <FormLabel>
+                      A. Om die regte van burgers te beskerm
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
                     <FormLabel>
-                      B. To provide guidelines for economic growth
+                      B. Om riglyne vir ekonomiese groei te verskaf
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
@@ -60,14 +62,14 @@ export function SectionOne({ form }: SectionOneProps) {
                       <RadioGroupItem value="C" />
                     </FormControl>
                     <FormLabel>
-                      C. To establish the rules for international relations
+                      C. Om die reëls vir internasionale betrekkinge te vestig
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
-                    <FormLabel>D. To organize sporting events</FormLabel>
+                    <FormLabel>D. Om sportgeleenthede te organiseer</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -80,8 +82,8 @@ export function SectionOne({ form }: SectionOneProps) {
       {/* Question 2 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          2. Which of the following is a human right guaranteed in the Bill of
-          Rights?
+          2. Watter van die volgende is &apos;n mensereg wat in die Handves van
+          Regte gewaarborg word?
         </h3>
         <FormField
           control={form.control}
@@ -98,26 +100,28 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>A. The right to free housing</FormLabel>
+                    <FormLabel>A. Die reg tot gratis behuising</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
-                    <FormLabel>B. The right to dignity</FormLabel>
+                    <FormLabel>B. Die reg tot menswaardigheid</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="C" />
                     </FormControl>
-                    <FormLabel>C. The right to a high-paying job</FormLabel>
+                    <FormLabel>
+                      C. Die reg tot &apos;n hoë-betaalde werk
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
                     <FormLabel>
-                      D. The right to free university education
+                      D. Die reg tot gratis universiteitsonderrig
                     </FormLabel>
                   </FormItem>
                 </RadioGroup>
@@ -131,8 +135,8 @@ export function SectionOne({ form }: SectionOneProps) {
       {/* Question 3 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          3. What does the term &quot;Ubuntu&quot; refer to in South African
-          culture?
+          3. Waarna verwys die term &quot;Ubuntu&quot; in die Suid-Afrikaanse
+          kultuur?
         </h3>
         <FormField
           control={form.control}
@@ -149,29 +153,29 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>A. A type of traditional food</FormLabel>
+                    <FormLabel>A. &apos;n Tipe tradisionele kos</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
                     <FormLabel>
-                      B. A philosophy emphasizing community and
-                      interconnectedness
+                      B. &apos;n Filosofie wat gemeenskap en onderlinge
+                      verbintenis beklemtoon
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="C" />
                     </FormControl>
-                    <FormLabel>C. A traditional dance</FormLabel>
+                    <FormLabel>C. &apos;n Tradisionele dans</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
                     <FormLabel>
-                      D. A specific language spoken in South Africa
+                      D. &apos;n Spesifieke taal wat in Suid-Afrika gepraat word
                     </FormLabel>
                   </FormItem>
                 </RadioGroup>
@@ -182,11 +186,10 @@ export function SectionOne({ form }: SectionOneProps) {
         />
       </div>
 
-      {/* Questions 4-10 follow the same pattern */}
       {/* Question 4 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          4. Which of the following is an example of good citizenship?
+          4. Watter van die volgende is &apos;n voorbeeld van goeie burgerskap?
         </h3>
         <FormField
           control={form.control}
@@ -203,25 +206,25 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>A. Voting in elections</FormLabel>
+                    <FormLabel>A. Stem in verkiesings</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
-                    <FormLabel>B. Avoiding paying taxes</FormLabel>
+                    <FormLabel>B. Belastingbetaling vermy</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="C" />
                     </FormControl>
-                    <FormLabel>C. Ignoring community issues</FormLabel>
+                    <FormLabel>C. Gemeenskapskwessies ignoreer</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
-                    <FormLabel>D. Breaking traffic laws</FormLabel>
+                    <FormLabel>D. Verkeersreëls oortree</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -234,7 +237,8 @@ export function SectionOne({ form }: SectionOneProps) {
       {/* Question 5 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          5. What is a key characteristic of a democratic society?
+          5. Wat is &apos;n belangrike kenmerk van &apos;n demokratiese
+          samelewing?
         </h3>
         <FormField
           control={form.control}
@@ -251,25 +255,27 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>A. Single-party rule</FormLabel>
+                    <FormLabel>A. Eenparty-regering</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
-                    <FormLabel>B. Limited freedom of speech</FormLabel>
+                    <FormLabel>B. Beperkte vryheid van spraak</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="C" />
                     </FormControl>
-                    <FormLabel>C. Regular free and fair elections</FormLabel>
+                    <FormLabel>
+                      C. Gereelde vrye en regverdige verkiesings
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
-                    <FormLabel>D. Government control of the media</FormLabel>
+                    <FormLabel>D. Regeringsbeheer oor die media</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -279,11 +285,11 @@ export function SectionOne({ form }: SectionOneProps) {
         />
       </div>
 
-      {/* Continue with remaining questions 6-10, updating field names */}
       {/* Question 6 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          6. Which of the following is a healthy coping mechanism for stress?
+          6. Watter van die volgende is &apos;n gesonde hanteringsmeganisme vir
+          stres?
         </h3>
         <FormField
           control={form.control}
@@ -300,25 +306,25 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>A. Regular physical exercise</FormLabel>
+                    <FormLabel>A. Gereelde fisiese oefening</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
-                    <FormLabel>B. Substance abuse</FormLabel>
+                    <FormLabel>B. Dwelmmisbruik</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="C" />
                     </FormControl>
-                    <FormLabel>C. Social isolation</FormLabel>
+                    <FormLabel>C. Sosiale isolasie</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
-                    <FormLabel>D. Procrastination</FormLabel>
+                    <FormLabel>D. Uitstel van take</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -331,7 +337,8 @@ export function SectionOne({ form }: SectionOneProps) {
       {/* Question 7 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          7. Which of the following is a benefit of a balanced diet?
+          7. Watter van die volgende is &apos;n voordeel van &apos;n
+          gebalanseerde dieet?
         </h3>
         <FormField
           control={form.control}
@@ -348,27 +355,29 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>A. Increased risk of chronic diseases</FormLabel>
+                    <FormLabel>
+                      A. Verhoogde risiko van chroniese siektes
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
                     <FormLabel>
-                      B. Improved concentration and energy levels
+                      B. Verbeterde konsentrasie en energievlakke
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="C" />
                     </FormControl>
-                    <FormLabel>C. Decreased immune function</FormLabel>
+                    <FormLabel>C. Verminderde immuunfunksie</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
-                    <FormLabel>D. Slower metabolism</FormLabel>
+                    <FormLabel>D. Stadiger metabolisme</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -381,7 +390,7 @@ export function SectionOne({ form }: SectionOneProps) {
       {/* Question 8 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          8. What is a primary goal of career planning?
+          8. Wat is &apos;n primêre doel van loopbaanbeplanning?
         </h3>
         <FormField
           control={form.control}
@@ -398,27 +407,29 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>A. Maximizing income at all costs</FormLabel>
+                    <FormLabel>
+                      A. Inkomste teen alle koste maksimaliseer
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
                     <FormLabel>
-                      B. Finding meaning and purpose in work
+                      B. Om betekenis en doel in werk te vind
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="C" />
                     </FormControl>
-                    <FormLabel>C. Avoiding all challenging positions</FormLabel>
+                    <FormLabel>C. Vermy alle uitdagende posisies</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
-                    <FormLabel>D. Working as little as possible</FormLabel>
+                    <FormLabel>D. So min as moontlik werk</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -430,7 +441,7 @@ export function SectionOne({ form }: SectionOneProps) {
 
       {/* Question 9 */}
       <div className="p-4 border rounded-md bg-slate-50">
-        <h3 className="text-md font-medium mb-2">9. What is peer pressure?</h3>
+        <h3 className="text-md font-medium mb-2">9. Wat is portuurdruk?</h3>
         <FormField
           control={form.control}
           name="vraag9"
@@ -447,7 +458,7 @@ export function SectionOne({ form }: SectionOneProps) {
                       <RadioGroupItem value="A" />
                     </FormControl>
                     <FormLabel>
-                      A. Pressure from parents to succeed academically
+                      A. Druk van ouers om akademies te presteer
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
@@ -455,7 +466,7 @@ export function SectionOne({ form }: SectionOneProps) {
                       <RadioGroupItem value="B" />
                     </FormControl>
                     <FormLabel>
-                      B. Influence from friends to adopt certain behaviors
+                      B. Invloed van vriende om sekere gedrag aan te neem
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
@@ -463,7 +474,7 @@ export function SectionOne({ form }: SectionOneProps) {
                       <RadioGroupItem value="C" />
                     </FormControl>
                     <FormLabel>
-                      C. Pressure from teachers to complete assignments
+                      C. Druk van onderwysers om opdragte te voltooi
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
@@ -471,7 +482,7 @@ export function SectionOne({ form }: SectionOneProps) {
                       <RadioGroupItem value="D" />
                     </FormControl>
                     <FormLabel>
-                      D. Pressure from employers to work overtime
+                      D. Druk van werkgewers om oortyd te werk
                     </FormLabel>
                   </FormItem>
                 </RadioGroup>
@@ -485,8 +496,8 @@ export function SectionOne({ form }: SectionOneProps) {
       {/* Question 10 */}
       <div className="p-4 border rounded-md bg-slate-50">
         <h3 className="text-md font-medium mb-2">
-          10. Which of the following is a characteristic of a healthy
-          relationship?
+          10. Watter van die volgende is &apos;n kenmerk van &apos;n gesonde
+          verhouding?
         </h3>
         <FormField
           control={form.control}
@@ -503,27 +514,25 @@ export function SectionOne({ form }: SectionOneProps) {
                     <FormControl>
                       <RadioGroupItem value="A" />
                     </FormControl>
-                    <FormLabel>
-                      A. One person making all the decisions
-                    </FormLabel>
+                    <FormLabel>A. Een persoon neem al die besluite</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="B" />
                     </FormControl>
-                    <FormLabel>B. Mutual respect and trust</FormLabel>
+                    <FormLabel>B. Wedersydse respek en vertroue</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="C" />
                     </FormControl>
-                    <FormLabel>C. Limited communication</FormLabel>
+                    <FormLabel>C. Beperkte kommunikasie</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
                       <RadioGroupItem value="D" />
                     </FormControl>
-                    <FormLabel>D. Controlling behavior</FormLabel>
+                    <FormLabel>D. Beherende gedrag</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
