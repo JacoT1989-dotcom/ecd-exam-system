@@ -4,134 +4,134 @@ import { lucia } from "@/auth";
 import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { isRedirectError } from "next/dist/client/components/redirect";
-import {
-  CreateLifeOrientationExamResponse,
-  LifeOrientationExamFormType,
-} from "./types";
 import { revalidatePath } from "next/cache";
 import { UserRole } from "@prisma/client";
-import { lifeOrientationExamFormSchema } from "./validations";
+import {
+  LewensorientringEksamenVormTipe,
+  SkepLewensorientringEksamenReaksie,
+} from "./types";
+import { lewensorientringEksamenVormSkema } from "./validations";
 
 /**
- * Server action to create a new Life Orientation Exam
- * This action is restricted to students only
+ * Bediener aksie om 'n nuwe Lewensoriëntering Eksamen te skep
+ * Hierdie aksie is beperk tot studente alleenlik
  */
-export async function createLifeOrientationExam(
-  formData: LifeOrientationExamFormType,
-): Promise<CreateLifeOrientationExamResponse> {
+export async function skepLewensorientringEksamen(
+  vormData: LewensorientringEksamenVormTipe,
+): Promise<SkepLewensorientringEksamenReaksie> {
   try {
-    // Get current session to verify user is authenticated
+    // Kry huidige sessie om te verifieer dat gebruiker geoutentiseer is
     const sessionId = cookies().get(lucia.sessionCookieName)?.value;
     if (!sessionId) {
       return {
-        error: "You must be logged in to create an exam.",
+        fout: "Jy moet aangemeld wees om 'n eksamen te skep.",
       };
     }
 
-    // Validate session and get user
+    // Valideer sessie en kry gebruiker
     const { user } = await lucia.validateSession(sessionId);
     if (!user) {
-      // Invalid session
+      // Ongeldige sessie
       cookies().delete(lucia.sessionCookieName);
       return {
-        error: "Session expired. Please log in again.",
+        fout: "Sessie het verstryk. Meld asseblief weer aan.",
       };
     }
 
-    // Check if user is a student
+    // Kontroleer of gebruiker 'n student is
     if (user.role !== UserRole.STUDENT) {
       return {
-        error: "Only students can create life orientation exams.",
+        fout: "Slegs studente kan lewensoriëntering eksamens skep.",
       };
     }
 
-    // Validate form data
-    const validatedData = lifeOrientationExamFormSchema.safeParse({
-      ...formData,
+    // Valideer vorm data
+    const validatedData = lewensorientringEksamenVormSkema.safeParse({
+      ...vormData,
       userId: user.id,
     });
 
     if (!validatedData.success) {
-      // Return validation errors
+      // Stuur validasie foute terug
       return {
-        error: "Invalid form data. Please check your answers and try again.",
+        fout: "Ongeldige vorm data. Kontroleer asseblief jou antwoorde en probeer weer.",
       };
     }
 
-    // Create the exam in the database
-    const newExam = await prisma.lifeOrientationExam.create({
+    // Skep die eksamen in die databasis
+    const nuweEksamen = await prisma.lewensorienteringEksamen.create({
       data: validatedData.data,
     });
 
-    // Revalidate the path to update UI
-    revalidatePath("/students/exams");
+    // Hervalideer die pad om UI op te dateer
+    revalidatePath("/students");
 
     return {
-      success: true,
-      examId: newExam.id,
+      sukses: true,
+      eksamenId: nuweEksamen.id,
     };
   } catch (error) {
     if (isRedirectError(error)) throw error;
-    console.error("Create Life Orientation Exam error:", error);
+    console.error("Skep Lewensoriëntering Eksamen fout:", error);
     return {
-      error: "Something went wrong. Please try again.",
+      fout: "Iets het verkeerd gegaan. Probeer asseblief weer.",
     };
   }
 }
 
 /**
- * Server action to fetch a Life Orientation Exam by ID
- * This action is restricted to students only
+ * Bediener aksie om 'n Lewensoriëntering Eksamen op te haal volgens ID
+ * Hierdie aksie is beperk tot studente alleenlik
  */
-export async function getLifeOrientationExam(examId: string) {
+export async function kryLewensorientringEksamen(eksamenId: string) {
   try {
-    // Get current session to verify user is authenticated
+    // Kry huidige sessie om te verifieer dat gebruiker geoutentiseer is
     const sessionId = cookies().get(lucia.sessionCookieName)?.value;
     if (!sessionId) {
       return {
-        error: "You must be logged in to view an exam.",
+        fout: "Jy moet aangemeld wees om 'n eksamen te sien.",
       };
     }
 
-    // Validate session and get user
+    // Valideer sessie en kry gebruiker
     const { user } = await lucia.validateSession(sessionId);
     if (!user) {
-      // Invalid session
+      // Ongeldige sessie
       cookies().delete(lucia.sessionCookieName);
       return {
-        error: "Session expired. Please log in again.",
+        fout: "Sessie het verstryk. Meld asseblief weer aan.",
       };
     }
 
-    // Check if user is a student
+    // Kontroleer of gebruiker 'n student is
     if (user.role !== UserRole.STUDENT) {
       return {
-        error: "Only students can view life orientation exams.",
+        fout: "Slegs studente kan lewensoriëntering eksamens sien.",
       };
     }
 
-    // Fetch the exam from the database
-    const exam = await prisma.lifeOrientationExam.findUnique({
+    // Haal die eksamen op van die databasis
+    const eksamen = await prisma.lewensorienteringEksamen.findUnique({
       where: {
-        id: examId,
-        userId: user.id, // Ensure the exam belongs to the requesting user
+        id: eksamenId,
+        userId: user.id, // Verseker dat die eksamen aan die aanvraende gebruiker behoort
       },
     });
 
-    if (!exam) {
+    if (!eksamen) {
       return {
-        error: "Exam not found or you don't have permission to view it.",
+        fout: "Eksamen nie gevind nie of jy het nie toestemming om dit te sien nie.",
       };
     }
 
     return {
-      success: true,
-      exam,
+      sukses: true,
+      eksamen,
     };
   } catch (error) {
-    console.error("Get Life Orientation Exam error:", error);
+    console.error("Kry Lewensoriëntering Eksamen fout:", error);
     return {
-      error: "Something went wrong. Please try again.",
+      fout: "Iets het verkeerd gegaan. Probeer asseblief weer.",
     };
   }
 }

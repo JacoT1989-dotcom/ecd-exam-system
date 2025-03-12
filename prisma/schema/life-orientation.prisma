@@ -60,3 +60,66 @@ model LifeOrientationExam {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
+
+model LewensorienteringEksamen {
+    id    String @id @default(uuid())
+    titel String
+    graad Int
+
+    vraag1  String?
+    vraag2  String?
+    vraag3  String?
+    vraag4  String?
+    vraag5  String?
+    vraag6  String?
+    vraag7  String?
+    vraag8  String?
+    vraag9  String?
+    vraag10 String?
+    vraag11 String?
+    vraag12 String?
+    vraag13 String?
+    vraag14 String?
+    vraag15 String?
+    vraag16 String?
+    vraag17 String?
+    vraag18 String?
+    vraag19 String?
+    vraag20 String?
+    vraag21 String?
+    vraag22 String?
+    vraag23 String?
+    vraag24 String?
+    vraag25 String?
+    vraag26 String?
+    vraag27 String?
+    vraag28 String?
+    vraag29 String?
+    vraag30 String?
+    vraag31 String?
+    vraag32 String?
+    vraag33 String?
+    vraag34 String?
+    vraag35 String?
+    vraag36 String?
+    vraag37 String?
+    vraag38 String?
+    vraag39 String?
+    vraag40 String?
+    vraag41 String?
+    vraag42 String?
+    vraag43 String?
+    vraag44 String?
+    vraag45 String?
+    vraag46 String?
+    vraag47 String?
+    vraag48 String?
+    vraag49 String?
+    vraag50 String?
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

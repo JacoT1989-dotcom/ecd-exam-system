@@ -1,30 +1,32 @@
-// types.ts
+// tipes.ts
 import { z } from "zod";
-import { lifeOrientationExamSchema } from "./validations";
+import { lewensorientringEksamenSkema } from "./validations";
 
-// Type inference from the schema
-export type LifeOrientationExamType = z.infer<typeof lifeOrientationExamSchema>;
-
-// For form submission (without ID and date which will be set by the system)
-export type LifeOrientationExamFormType = Omit<
-  LifeOrientationExamType,
-  "id" | "date"
+// Tipe afleiding van die skema
+export type LewensorientringEksamenTipe = z.infer<
+  typeof lewensorientringEksamenSkema
 >;
 
-// Multiple choice answer options
-export type MCOption = "A" | "B" | "C" | "D";
+// Vir vorm indiening (sonder ID en datum wat deur die stelsel ingestel sal word)
+export type LewensorientringEksamenVormTipe = Omit<
+  LewensorientringEksamenTipe,
+  "id" | "datum"
+>;
 
-// Response type for the create action
-export type CreateLifeOrientationExamResponse = {
-  error?: string;
-  success?: boolean;
-  examId?: string;
+// Meervoudige keuse antwoord opsies
+export type MCOpsie = "A" | "B" | "C" | "D";
+
+// Reaksie tipe vir die skep aksie
+export type SkepLewensorientringEksamenReaksie = {
+  fout?: string;
+  sukses?: boolean;
+  eksamenId?: string;
 };
 
-// Question structure for client-side use
-export type LifeOrientationQuestion = {
+// Vraag struktuur vir kliënt-kant gebruik
+export type LewensorientringVraag = {
   id: string;
-  text: string;
-  type: "multipleChoice" | "text";
-  options?: string[];
+  teks: string;
+  tipe: "meervoudigeKeuse" | "teks";
+  opsies?: string[];
 };

@@ -1,143 +1,219 @@
-// validation.ts
+// validasie.ts
 import { z } from "zod";
 
-// Multiple choice options
-const mcOptions = ["A", "B", "C", "D"] as const;
+// Meervoudige keuse opsies
+const mcOpsies = ["A", "B", "C", "D"] as const;
 
-// Validation schema for Life Orientation Exam
-export const lifeOrientationExamSchema = z.object({
-  id: z.string().uuid().optional(), // Optional as it will be auto-generated
-  title: z
+// Validasie skema vir Lewensoriëntering Eksamen
+export const lewensorientringEksamenSkema = z.object({
+  id: z.string().uuid().optional(), // Opsioneel omdat dit outomaties gegenereer sal word
+  titel: z
     .string()
-    .min(5, { message: "Title must be at least 5 characters" })
+    .min(5, { message: "Titel moet ten minste 5 karakters wees" })
     .max(100),
-  grade: z
+  graad: z
     .number()
     .int()
-    .min(8, { message: "Grade must be at least 8" })
+    .min(8, { message: "Graad moet ten minste 8 wees" })
     .max(12),
-  date: z.date().optional(), // Optional as it will default to current date
+  datum: z.date().optional(), // Opsioneel omdat dit na die huidige datum sal verstek
 
-  // Multiple choice questions (1-25)
-  question1: z.enum(mcOptions, {
-    errorMap: () => ({ message: "Please select option A, B, C, or D" }),
+  // Meervoudige keuse vrae (1-25)
+  vraag1: z.enum(mcOpsies, {
+    errorMap: () => ({ message: "Kies asseblief opsie A, B, C, of D" }),
   }),
-  question2: z.enum(mcOptions),
-  question3: z.enum(mcOptions),
-  question4: z.enum(mcOptions),
-  question5: z.enum(mcOptions),
-  question6: z.enum(mcOptions),
-  question7: z.enum(mcOptions),
-  question8: z.enum(mcOptions),
-  question9: z.enum(mcOptions),
-  question10: z.enum(mcOptions),
-  question11: z.enum(mcOptions),
-  question12: z.enum(mcOptions),
-  question13: z.enum(mcOptions),
-  question14: z.enum(mcOptions),
-  question15: z.enum(mcOptions),
-  question16: z.enum(mcOptions),
-  question17: z.enum(mcOptions),
-  question18: z.enum(mcOptions),
-  question19: z.enum(mcOptions),
-  question20: z.enum(mcOptions),
-  question21: z.enum(mcOptions),
-  question22: z.enum(mcOptions),
-  question23: z.enum(mcOptions),
-  question24: z.enum(mcOptions),
-  question25: z.enum(mcOptions),
+  vraag2: z.enum(mcOpsies),
+  vraag3: z.enum(mcOpsies),
+  vraag4: z.enum(mcOpsies),
+  vraag5: z.enum(mcOpsies),
+  vraag6: z.enum(mcOpsies),
+  vraag7: z.enum(mcOpsies),
+  vraag8: z.enum(mcOpsies),
+  vraag9: z.enum(mcOpsies),
+  vraag10: z.enum(mcOpsies),
+  vraag11: z.enum(mcOpsies),
+  vraag12: z.enum(mcOpsies),
+  vraag13: z.enum(mcOpsies),
+  vraag14: z.enum(mcOpsies),
+  vraag15: z.enum(mcOpsies),
+  vraag16: z.enum(mcOpsies),
+  vraag17: z.enum(mcOpsies),
+  vraag18: z.enum(mcOpsies),
+  vraag19: z.enum(mcOpsies),
+  vraag20: z.enum(mcOpsies),
+  vraag21: z.enum(mcOpsies),
+  vraag22: z.enum(mcOpsies),
+  vraag23: z.enum(mcOpsies),
+  vraag24: z.enum(mcOpsies),
+  vraag25: z.enum(mcOpsies),
 
-  // Text-based questions (26-50)
-  question26: z.string().min(1, { message: "Answer cannot be empty" }).max(500),
-  question27: z.string().min(1).max(500),
-  question28: z.string().min(1).max(500),
-  question29: z.string().min(1).max(500),
-  question30: z.string().min(1).max(500),
-  question31: z.string().min(1).max(500),
-  question32: z.string().min(1).max(500),
-  question33: z.string().min(1).max(500),
-  question34: z.string().min(1).max(500),
-  question35: z.string().min(1).max(500),
-  question36: z.string().min(1).max(500),
-  question37: z.string().min(1).max(500),
-  question38: z.string().min(1).max(500),
-  question39: z.string().min(1).max(500),
-  question40: z.string().min(1).max(500),
-  question41: z.string().min(1).max(500),
-  question42: z.string().min(1).max(500),
-  question43: z.string().min(1).max(500),
-  question44: z.string().min(1).max(500),
-  question45: z.string().min(1).max(500),
-  question46: z.string().min(1).max(500),
-  question47: z.string().min(1).max(500),
-  question48: z.string().min(1).max(500),
-  question49: z.string().min(1).max(500),
-  question50: z.string().min(1).max(500),
+  // Teks-gebaseerde vrae (26-50)
+  vraag26: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag27: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag28: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag29: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag30: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag31: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag32: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag33: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag34: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag35: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag36: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag37: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag38: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag39: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag40: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag41: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag42: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag43: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag44: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag45: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag46: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag47: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag48: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag49: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
+  vraag50: z
+    .string()
+    .min(1, { message: "Antwoord kan nie leeg wees nie" })
+    .max(500),
 
   userId: z.string(),
 });
 
-// For form submission (without ID and date which will be set by the system)
-export const lifeOrientationExamFormSchema = lifeOrientationExamSchema.omit({
-  id: true,
-  date: true,
-});
+// Vir vorm indiening (sonder ID en datum wat deur die stelsel ingestel sal word)
+export const lewensorientringEksamenVormSkema =
+  lewensorientringEksamenSkema.omit({
+    id: true,
+    datum: true,
+  });
 
-// Helper function to generate default values for the form
-export const getDefaultLifeOrientationExamValues = () => {
+// Hulpfunksie om verstek waardes vir die vorm te genereer
+export const getVerstekLewensorientringEksamenWaardes = () => {
   return {
-    title: "",
-    grade: 10,
-    question1: undefined,
-    question2: undefined,
-    question3: undefined,
-    question4: undefined,
-    question5: undefined,
-    question6: undefined,
-    question7: undefined,
-    question8: undefined,
-    question9: undefined,
-    question10: undefined,
-    question11: undefined,
-    question12: undefined,
-    question13: undefined,
-    question14: undefined,
-    question15: undefined,
-    question16: undefined,
-    question17: undefined,
-    question18: undefined,
-    question19: undefined,
-    question20: undefined,
-    question21: undefined,
-    question22: undefined,
-    question23: undefined,
-    question24: undefined,
-    question25: undefined,
-    question26: "",
-    question27: "",
-    question28: "",
-    question29: "",
-    question30: "",
-    question31: "",
-    question32: "",
-    question33: "",
-    question34: "",
-    question35: "",
-    question36: "",
-    question37: "",
-    question38: "",
-    question39: "",
-    question40: "",
-    question41: "",
-    question42: "",
-    question43: "",
-    question44: "",
-    question45: "",
-    question46: "",
-    question47: "",
-    question48: "",
-    question49: "",
-    question50: "",
+    titel: "",
+    graad: 10,
+    vraag1: undefined,
+    vraag2: undefined,
+    vraag3: undefined,
+    vraag4: undefined,
+    vraag5: undefined,
+    vraag6: undefined,
+    vraag7: undefined,
+    vraag8: undefined,
+    vraag9: undefined,
+    vraag10: undefined,
+    vraag11: undefined,
+    vraag12: undefined,
+    vraag13: undefined,
+    vraag14: undefined,
+    vraag15: undefined,
+    vraag16: undefined,
+    vraag17: undefined,
+    vraag18: undefined,
+    vraag19: undefined,
+    vraag20: undefined,
+    vraag21: undefined,
+    vraag22: undefined,
+    vraag23: undefined,
+    vraag24: undefined,
+    vraag25: undefined,
+    vraag26: "",
+    vraag27: "",
+    vraag28: "",
+    vraag29: "",
+    vraag30: "",
+    vraag31: "",
+    vraag32: "",
+    vraag33: "",
+    vraag34: "",
+    vraag35: "",
+    vraag36: "",
+    vraag37: "",
+    vraag38: "",
+    vraag39: "",
+    vraag40: "",
+    vraag41: "",
+    vraag42: "",
+    vraag43: "",
+    vraag44: "",
+    vraag45: "",
+    vraag46: "",
+    vraag47: "",
+    vraag48: "",
+    vraag49: "",
+    vraag50: "",
     userId: "",
   };
 };
