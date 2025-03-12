@@ -18,11 +18,9 @@ interface SectionOneProps {
 export function SectionOne({ form }: SectionOneProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold">
-        Section 1: Multiple Choice Questions (1-10)
-      </h2>
+      <h2 className="text-xl font-bold">Afdeling 1: Multikeuse Vrae (1-10)</h2>
       <p className="text-sm text-gray-500 mb-4">
-        Select the correct option for each question
+        Kies die korrekte opsie vir elke vraag
       </p>
 
       {/* Question 1 */}
