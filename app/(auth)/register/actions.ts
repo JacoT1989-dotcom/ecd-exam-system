@@ -9,7 +9,7 @@ import { Prisma, UserRole } from "@prisma/client";
 
 export async function signUp(
   formData: RegisterFormValues,
-): Promise<{ error?: string } | never> {
+): Promise<{ error?: string; userId?: string } | never> {
   try {
     const validatedData = registerSchema.parse(formData);
 
@@ -52,7 +52,7 @@ export async function signUp(
       parallelism: 1,
     });
 
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         username: validatedData.username,
         email: validatedData.email,
@@ -71,7 +71,11 @@ export async function signUp(
       },
     });
 
-    redirect("/login");
+    // Return the user ID instead of redirecting
+    return { userId: newUser.id };
+
+    // Comment out the redirect
+    // redirect("/login");
   } catch (error) {
     if (isRedirectError(error)) throw error;
 
