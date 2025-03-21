@@ -1,8 +1,6 @@
-import { Toaster } from "sonner";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
-import SessionProvider from "./SessionProvider";
 import { validateRequest } from "@/auth";
+import Providers from "./Providers";
 
 export default async function RootLayout({
   children,
@@ -14,17 +12,9 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <SessionProvider value={{ user, session }}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem={false}
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </SessionProvider>
+        <Providers user={user} session={session}>
+          {children}
+        </Providers>
       </body>
     </html>
   );
