@@ -1,23 +1,23 @@
 model User {
-    id                      String                     @id @default(uuid())
-    username                String                     @unique
-    firstName               String
-    lastName                String
-    displayName             String
-    email                   String                     @unique
-    passwordHash            String
-    phoneNumber             String                     @default("")
-    streetAddress           String
-    suburb                  String?
-    townCity                String
-    postcode                String
-    country                 String
-    avatarUrl               String?
-    backgroundUrl           String?
-    agreeTerms              Boolean                    @default(false)
-    role                    UserRole                   @default(USER)
-    isInvigilator           Boolean                    @default(false)
-    examCenterId            String?
+    id            String   @id @default(uuid())
+    username      String   @unique
+    firstName     String
+    lastName      String
+    displayName   String
+    email         String   @unique
+    passwordHash  String
+    phoneNumber   String   @default("")
+    streetAddress String
+    suburb        String?
+    townCity      String
+    postcode      String
+    country       String
+    avatarUrl     String?
+    backgroundUrl String?
+    agreeTerms    Boolean  @default(false)
+    role          UserRole @default(USER)
+    isInvigilator Boolean  @default(false)
+
     startDate               DateTime?
     endDate                 DateTime?
     Session                 Session[]
@@ -25,6 +25,7 @@ model User {
     LewensorieteringEksamen LewensorienteringEksamen[]
     Subject                 Subject[]
     HandwritingEntry        HandwritingEntry[]
+    ExamCenter              ExamCenter[]
 
     @@map("users")
 }

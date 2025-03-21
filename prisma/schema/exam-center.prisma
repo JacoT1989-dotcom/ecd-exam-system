@@ -1,0 +1,14 @@
+model ExamCenter {
+    id                String   @id @default(uuid())
+    examinationNumber String   @unique
+    year              Int
+    province          String
+    centerName        String
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+    isActive          Boolean  @default(true)
+    User              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId            String?
+
+    @@map("exam_centers")
+}
