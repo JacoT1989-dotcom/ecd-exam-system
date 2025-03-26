@@ -76,7 +76,7 @@ const ExamCard = ({
                   : "bg-gray-100 text-gray-400"
               }`}
           >
-            {isAvailable ? "Start Exam" : "Not Yet Available"}
+            {isAvailable ? "Start Exam" : "Not Available Yet"}
           </div>
         </div>
       </div>
