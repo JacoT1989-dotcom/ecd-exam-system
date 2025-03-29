@@ -2,7 +2,7 @@ model Subject {
     id String @id @default(uuid())
 
     title               String
-    subjectCode         String   @unique @map("subject_code")
+    subjectCode         String   @map("subject_code") // Remove the @unique attribute
     startingTime        DateTime @map("starting_time")
     dueTime             DateTime @map("due_time")
     examDate            DateTime @map("exam_date")
@@ -14,5 +14,7 @@ model Subject {
     userId String
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+    // Add a composite unique constraint instead if needed
+    @@unique([userId, subjectCode]) // This ensures a user can't register the same subject twice
     @@map("subjects")
 }

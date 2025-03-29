@@ -27,11 +27,11 @@ import { registerSchema, type RegisterFormValues } from "./validation";
 import {
   examCenterSchema,
   type ExamCenterFormValues,
-} from "./exam-validations"; // You'll need to create this
-import { signUp } from "./actions";
-import { toast } from "sonner";
+} from "./exam-validations";
+
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { createOrUpdateExamCenter } from "./exam-center-details";
+
+import SubjectSelectionForm from "./SubjectSelectionForm";
 
 interface RegisterFormProps {
   inModal?: boolean;
@@ -54,6 +54,8 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
     "Western Cape",
   ]);
   const [userData, setUserData] = useState<RegisterFormValues | null>(null);
+  const [examCenterData, setExamCenterData] =
+    useState<ExamCenterFormValues | null>(null);
 
   // User registration form
   const userForm = useForm<RegisterFormValues>({
@@ -89,7 +91,7 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
   });
 
   // Handle direct next button click with validation
-  const handleNextClick = () => {
+  const handleNextToExamCenter = () => {
     console.log("Next button clicked");
 
     // Trigger manual validation
@@ -107,79 +109,27 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
     });
   };
 
+  // Handle next button click with validation for Step 2
+  const handleNextToSubjects = () => {
+    examCenterForm.trigger().then((isValid) => {
+      if (isValid) {
+        const values = examCenterForm.getValues();
+        setExamCenterData(values);
+        setStep(3);
+      }
+    });
+  };
+
   const handlePrevStep = () => {
     setStep(1);
   };
 
-  const onSubmitExamCenterForm = async (
-    examCenterData: ExamCenterFormValues,
+  // Handle registration completion from SubjectSelectionForm
+  const handleRegistrationComplete = async (
+    userId: string,
+    selectedSubjectCodes: string[],
   ) => {
-    try {
-      setIsPending(true);
-
-      // First register the user
-      if (!userData) {
-        toast.error(
-          "User data is missing. Please go back and fill the registration form",
-        );
-        return;
-      }
-
-      console.log("Submitting user data:", userData);
-      const userResult = await signUp(userData);
-
-      if (userResult?.error) {
-        toast.error(userResult.error);
-        if (userResult.error.includes("Username")) {
-          userForm.setError("username", { message: userResult.error });
-        } else if (userResult.error.includes("Email")) {
-          userForm.setError("email", { message: userResult.error });
-        }
-        setStep(1);
-        return;
-      }
-
-      console.log("User registration successful, result:", userResult);
-
-      // Check if we got a userId back from the signup function
-      if (userResult?.userId) {
-        console.log("Creating exam center for user:", userResult.userId);
-
-        // Then create the exam center using the userId
-        const examCenterResult = await createOrUpdateExamCenter(
-          examCenterData,
-          userResult.userId,
-        );
-
-        if (examCenterResult?.error) {
-          console.error("Exam center creation failed:", examCenterResult.error);
-          toast.error(examCenterResult.error);
-          return;
-        }
-
-        console.log("Exam center creation successful");
-      } else {
-        console.error("No userId returned from signUp");
-        toast.error(
-          "User created but exam center setup failed. Please log in and set up your exam center later.",
-        );
-      }
-
-      toast.success("Registration successful!");
-
-      // First close the modal if we're in modal mode
-      if (inModal && setIsOpen) {
-        setIsOpen(false);
-      }
-
-      // Then manually redirect to register-success
-      router.push("/register-success");
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsPending(false);
-    }
+    router.push("/register-success");
   };
 
   return (
@@ -214,13 +164,34 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
           <h1
             className={`text-2xl font-semibold ${inModal ? "text-gray-800" : "text-foreground"}`}
           >
-            {step === 1 ? "Create an Account" : "Exam Center Details"}
+            {step === 1
+              ? "Create an Account"
+              : step === 2
+                ? "Exam Center Details"
+                : "Select Your Subjects"}
           </h1>
           <p className={inModal ? "text-gray-500" : "text-muted-foreground"}>
             {step === 1
               ? "Please complete all required fields to register"
-              : "Please provide your examination center details"}
+              : step === 2
+                ? "Please provide your examination center details"
+                : "Select up to 10 subjects you want to register for"}
           </p>
+        </div>
+
+        {/* Registration Progress */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="flex items-center w-full max-w-md">
+            <div
+              className={`h-2 w-1/3 rounded-l-full ${step >= 1 ? "bg-green-500" : "bg-gray-200"}`}
+            ></div>
+            <div
+              className={`h-2 w-1/3 ${step >= 2 ? "bg-green-500" : "bg-gray-200"}`}
+            ></div>
+            <div
+              className={`h-2 w-1/3 rounded-r-full ${step >= 3 ? "bg-green-500" : "bg-gray-200"}`}
+            ></div>
+          </div>
         </div>
 
         {/* Step 1: User Registration Form */}
@@ -547,7 +518,7 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
               {/* Changed to button type and using direct click handler */}
               <Button
                 type="button"
-                onClick={handleNextClick}
+                onClick={handleNextToExamCenter}
                 className={`w-full mt-6 ${inModal ? "bg-[#4a6e8a] hover:bg-[#3d5a73] text-white" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
                 disabled={isPending}
               >
@@ -570,10 +541,7 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
         {/* Step 2: Exam Center Form */}
         {step === 2 && (
           <Form {...examCenterForm}>
-            <form
-              onSubmit={examCenterForm.handleSubmit(onSubmitExamCenterForm)}
-              className="space-y-4"
-            >
+            <form className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={examCenterForm.control}
@@ -696,22 +664,31 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
                 </Button>
 
                 <Button
-                  type="submit"
+                  type="button"
+                  onClick={handleNextToSubjects}
                   className={`flex-1 ${inModal ? "bg-[#4a6e8a] hover:bg-[#3d5a73] text-white" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
                   disabled={isPending}
                 >
-                  {isPending ? (
-                    <div className="flex items-center justify-center">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      Creating Account...
-                    </div>
-                  ) : (
-                    "Complete Registration"
-                  )}
+                  <div className="flex items-center justify-center">
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </div>
                 </Button>
               </div>
             </form>
           </Form>
+        )}
+
+        {/* Step 3: Subject Selection (Imported Component) */}
+        {step === 3 && (
+          <SubjectSelectionForm
+            userData={userData!}
+            examCenterData={examCenterData!}
+            onPrevStep={() => setStep(2)}
+            onComplete={handleRegistrationComplete}
+            inModal={inModal}
+            setIsOpen={setIsOpen}
+          />
         )}
       </div>
     </div>
