@@ -18,6 +18,7 @@ import {
   LucideSave,
 } from "lucide-react";
 import { saveHandwriting } from "./actions";
+import MyTodoListModal from "./MyTodoList";
 
 interface Point {
   x: number;
@@ -230,9 +231,8 @@ const HandwritingRecognition: React.FC<HandwritingRecognitionProps> = ({
       formData.append("canvasImage", blob, "handwriting.png");
       formData.append("points", JSON.stringify(points));
 
-      if (recognizedText) {
-        formData.append("recognizedText", recognizedText);
-      }
+      // Always append recognizedText, even if it's empty
+      formData.append("recognizedText", recognizedText || "");
 
       // Call the server action to save the handwriting
       const result = await saveHandwriting(formData);
@@ -251,8 +251,8 @@ const HandwritingRecognition: React.FC<HandwritingRecognitionProps> = ({
         });
       }
 
-      // Optionally clear the canvas after successful submission
-      // clearCanvas();
+      // Clear the canvas after successful submission
+      clearCanvas();
     } catch (error) {
       console.error("Failed to submit handwriting:", error);
       toast.error("Failed to save handwriting");
@@ -270,7 +270,10 @@ const HandwritingRecognition: React.FC<HandwritingRecognitionProps> = ({
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Handwriting Recognition</span>
+            <div className="flex items-center">
+              <span>Handwriting Recognition</span>
+              <MyTodoListModal />
+            </div>
             <Button
               variant="outline"
               size="icon"

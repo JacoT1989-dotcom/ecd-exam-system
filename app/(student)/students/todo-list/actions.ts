@@ -12,8 +12,9 @@ interface Point {
 }
 
 // Schema for validating handwriting data
+// Update recognizedText to allow null values
 const saveHandwritingSchema = z.object({
-  recognizedText: z.string().optional(),
+  recognizedText: z.string().nullable().optional(),
   points: z.array(
     z.object({
       x: z.number(),
@@ -42,7 +43,7 @@ export async function saveHandwriting(formData: FormData) {
 
     // Get JSON data from FormData
     const pointsJson = formData.get("points") as string;
-    const recognizedText = formData.get("recognizedText") as string;
+    const recognizedText = formData.get("recognizedText") as string | null;
 
     if (!pointsJson) {
       return {
@@ -143,7 +144,7 @@ export async function getUserHandwritingEntries() {
 
     const entries = await prisma.handwritingEntry.findMany({
       where: { userId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" }, // asc = oldest first
     });
 
     return {
