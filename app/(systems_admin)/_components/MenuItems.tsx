@@ -33,27 +33,27 @@ export function useMenuItems() {
         ],
       },
       {
-        title: "Faculty & Staff",
+        title: "Users",
         links: [
           {
-            name: "Teacher Directory",
+            name: "SUsers",
             href: "/admin/faculty/teachers/directory",
           },
           {
-            name: "Staff Directory",
-            href: "/admin/faculty/staff/directory",
+            name: "Students",
+            href: "/admin/faculty/development/training",
           },
           {
-            name: "Training Programs",
-            href: "/admin/faculty/development/training",
+            name: "Teachers",
+            href: "/admin/faculty/staff/directory",
           },
         ],
       },
       {
-        title: "Assessment",
+        title: "Exam Scheduling",
         links: [
           {
-            name: "Exam Schedule",
+            name: "Schedule Exam",
             href: "/admin/assessment/exams/schedule",
           },
           {
