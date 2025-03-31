@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +15,17 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, setIsOpen }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] p-0 overflow-hidden border border-gray-200 shadow-xl rounded-lg">
+      <DialogContent 
+        className="sm:max-w-[600px] max-h-[90vh] p-0 overflow-hidden border border-gray-200 shadow-xl rounded-lg"
+        aria-describedby="auth-modal-description"
+        aria-labelledby="auth-modal-title"
+      >
+        <div id="auth-modal-description" className="sr-only">
+          Authentication dialog for login and registration
+        </div>
+        <div id="auth-modal-title" className="sr-only">
+          Authentication
+        </div>
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="w-full grid grid-cols-2 p-0 bg-gray-100 rounded-t-lg">
             <TabsTrigger

@@ -17,15 +17,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   registerSchema,
   type RegisterFormValues,
 } from "./_validations/validation";
-import { type ExamCenterFormValues } from "./_validations/exam-validations";
+import {
+  examCenterSchema,
+  type ExamCenterFormValues,
+} from "./_validations/exam-validations";
+import {
+  StaffIdentifierFormValues,
+  staffIdentifierSchema,
+} from "./_validations/staff-identifier-validation";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import SubjectSelectionForm from "./_components/SubjectSelectionForm";
-import ExamCenterForm from "./_components/ExamCenterForm";
+import StaffIdentifierForm from "./_components/StaffIdentifierForm";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { signUp } from "./_actions/actions";
+import { createOrUpdateExamCenter } from "./_actions/exam-center-details";
+import { registerUserSubjects } from "./_actions/subject-actions";
+import { createStaffIdentifier } from "./_actions/staff-identifier";
 
 interface RegisterFormProps {
   inModal?: boolean;
@@ -36,6 +56,18 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
   const router = useRouter();
   const [isPending, setIsPending] = React.useState(false);
   const [step, setStep] = useState(1);
+  const [userType, setUserType] = useState("student"); // Default to student registration
+  const [provinces, setProvinces] = useState([
+    "Eastern Cape",
+    "Free State",
+    "Gauteng",
+    "KwaZulu-Natal",
+    "Limpopo",
+    "Mpumalanga",
+    "North West",
+    "Northern Cape",
+    "Western Cape",
+  ]);
   const [userData, setUserData] = useState<RegisterFormValues | null>(null);
   const [examCenterData, setExamCenterData] =
     useState<ExamCenterFormValues | null>(null);
@@ -55,47 +87,138 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
       country: "",
       password: "",
       confirmPassword: "",
-      role: "USER",
+      role: "USER", // Default role is USER
       agreeTerms: false,
       avatarUrl: null,
       backgroundUrl: null,
     },
   });
 
-  // Handle direct next button click with validation
-  const handleNextToExamCenter = () => {
-    console.log("Next button clicked");
+  // Exam center form
+  const examCenterForm = useForm<ExamCenterFormValues>({
+    resolver: zodResolver(examCenterSchema),
+    defaultValues: {
+      examinationNumber: "",
+      year: new Date().getFullYear(),
+      province: "",
+      centerName: "",
+    },
+  });
 
+  // Update role when user type changes
+  React.useEffect(() => {
+    // Map userType to the appropriate role enum value
+    const roleMap = {
+      student: "STUDENT",
+      staff: "TEACHER", // Default staff role, can be changed in the staff form if needed
+    } as const;
+
+    userForm.setValue("role", roleMap[userType as keyof typeof roleMap]);
+  }, [userType, userForm]);
+
+  // Handle user type change
+  const handleUserTypeChange = (value: string) => {
+    setUserType(value);
+    setStep(1); // Reset to first step when switching user type
+  };
+
+  // Handle next button click with validation
+  const handleNextStep = () => {
     // Trigger manual validation
     userForm.trigger().then((isValid) => {
-      console.log("Form valid:", isValid);
       if (isValid) {
         const values = userForm.getValues();
-        console.log("Form values:", values);
         setUserData(values);
         setStep(2);
-        console.log("Moving to step 2");
-      } else {
-        console.log("Form errors:", userForm.formState.errors);
+      }
+    });
+  };
+
+  // Handle next button click with validation for Step 2
+  const handleNextToSubjects = () => {
+    examCenterForm.trigger().then((isValid) => {
+      if (isValid) {
+        const values = examCenterForm.getValues();
+        setExamCenterData(values);
+        setStep(3);
       }
     });
   };
 
   const handlePrevStep = () => {
-    setStep(1);
-  };
-
-  const handleNextToSubjects = (examCenterValues: ExamCenterFormValues) => {
-    setExamCenterData(examCenterValues);
-    setStep(3);
+    setStep(step - 1);
   };
 
   // Handle registration completion from SubjectSelectionForm
   const handleRegistrationComplete = async (
     userId: string,
-    selectedSubjectCodes: string[],
+    selectedSubjectCodes?: string[],
   ) => {
     router.push("/register-success");
+  };
+
+  // Handle staff registration completion
+  const handleStaffRegistrationComplete = async (
+    staffIdentifierValues: StaffIdentifierFormValues,
+  ) => {
+    try {
+      setIsPending(true);
+
+      // Validate user data
+      if (!userData) {
+        toast.error("User data is missing");
+        return;
+      }
+
+      // Process staff registration here
+      console.log("Submitting user data:", userData);
+      const userResult = await signUp(userData);
+
+      if (userResult?.error) {
+        toast.error(userResult.error);
+        return;
+      }
+
+      console.log("Staff user registration successful, result:", userResult);
+
+      // Check if we got a userId back from the signup function
+      if (userResult?.userId) {
+        console.log("Creating staff identifier for user:", userResult.userId);
+
+        // Create the staff identifier using the userId
+        const staffResult = await createStaffIdentifier(
+          staffIdentifierValues,
+          userResult.userId,
+        );
+
+        if (staffResult?.error) {
+          console.error("Staff identifier creation failed:", staffResult.error);
+          toast.error(staffResult.error);
+          return;
+        }
+
+        console.log("Staff identifier creation successful");
+        toast.success("Registration successful!");
+
+        // First close the modal if we're in modal mode
+        if (inModal && setIsOpen) {
+          setIsOpen(false);
+        }
+
+        // Navigate to success page
+        handleRegistrationComplete(userResult.userId);
+      } else {
+        console.error("No userId returned from signUp");
+        toast.error(
+          "User created but additional setup failed. Please log in and complete your profile setup later.",
+        );
+      }
+    } catch (error) {
+      console.error("Staff registration error:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -132,31 +255,63 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
           >
             {step === 1
               ? "Create an Account"
-              : step === 2
-                ? "Exam Center Details"
-                : "Select Your Subjects"}
+              : userType === "student"
+                ? step === 2
+                  ? "Exam Center Details"
+                  : "Select Your Subjects"
+                : "Staff Identification"}
           </h1>
           <p className={inModal ? "text-gray-500" : "text-muted-foreground"}>
             {step === 1
               ? "Please complete all required fields to register"
-              : step === 2
-                ? "Please provide your examination center details"
-                : "Select up to 10 subjects you want to register for"}
+              : userType === "student"
+                ? step === 2
+                  ? "Please provide your examination center details"
+                  : "Select up to 10 subjects you want to register for"
+                : "Please provide your staff identification details"}
           </p>
+        </div>
+
+        {/* User Type Selection */}
+        <div className="flex justify-center">
+          <Tabs
+            defaultValue="student"
+            value={userType}
+            onValueChange={handleUserTypeChange}
+            className="w-full max-w-xs"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="student">Student</TabsTrigger>
+              <TabsTrigger value="staff">Staff Member</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Registration Progress */}
         <div className="flex items-center justify-center mb-6">
           <div className="flex items-center w-full max-w-md">
-            <div
-              className={`h-2 w-1/3 rounded-l-full ${step >= 1 ? "bg-green-500" : "bg-gray-200"}`}
-            ></div>
-            <div
-              className={`h-2 w-1/3 ${step >= 2 ? "bg-green-500" : "bg-gray-200"}`}
-            ></div>
-            <div
-              className={`h-2 w-1/3 rounded-r-full ${step >= 3 ? "bg-green-500" : "bg-gray-200"}`}
-            ></div>
+            {userType === "student" ? (
+              <>
+                <div
+                  className={`h-2 w-1/3 rounded-l-full ${step >= 1 ? "bg-green-500" : "bg-gray-200"}`}
+                ></div>
+                <div
+                  className={`h-2 w-1/3 ${step >= 2 ? "bg-green-500" : "bg-gray-200"}`}
+                ></div>
+                <div
+                  className={`h-2 w-1/3 rounded-r-full ${step >= 3 ? "bg-green-500" : "bg-gray-200"}`}
+                ></div>
+              </>
+            ) : (
+              <>
+                <div
+                  className={`h-2 w-1/2 rounded-l-full ${step >= 1 ? "bg-green-500" : "bg-gray-200"}`}
+                ></div>
+                <div
+                  className={`h-2 w-1/2 rounded-r-full ${step >= 2 ? "bg-green-500" : "bg-gray-200"}`}
+                ></div>
+              </>
+            )}
           </div>
         </div>
 
@@ -481,10 +636,9 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
                 )}
               />
 
-              {/* Changed to button type and using direct click handler */}
               <Button
                 type="button"
-                onClick={handleNextToExamCenter}
+                onClick={handleNextStep}
                 className={`w-full mt-6 ${inModal ? "bg-[#4a6e8a] hover:bg-[#3d5a73] text-white" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
                 disabled={isPending}
               >
@@ -504,25 +658,171 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
           </Form>
         )}
 
-        {/* Step 2: Exam Center Form (Now using the imported component) */}
-        {step === 2 && (
-          <ExamCenterForm
-            onPrevStep={handlePrevStep}
-            onNextStep={handleNextToSubjects}
-            inModal={inModal}
-            isPending={isPending}
-          />
+        {/* Student-specific forms */}
+        {userType === "student" && (
+          <>
+            {/* Step 2: Exam Center Form */}
+            {step === 2 && (
+              <Form {...examCenterForm}>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={examCenterForm.control}
+                      name="examinationNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={inModal ? "text-gray-700" : ""}>
+                            Examination Number*
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="12345-678"
+                              {...field}
+                              disabled={isPending}
+                              className={
+                                inModal
+                                  ? "bg-white border-gray-300 focus:border-[#4a6e8a] focus:ring-[#4a6e8a]"
+                                  : "bg-background"
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={examCenterForm.control}
+                      name="year"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={inModal ? "text-gray-700" : ""}>
+                            Year*
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="2025"
+                              {...field}
+                              disabled={isPending}
+                              className={
+                                inModal
+                                  ? "bg-white border-gray-300 focus:border-[#4a6e8a] focus:ring-[#4a6e8a]"
+                                  : "bg-background"
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={examCenterForm.control}
+                      name="province"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={inModal ? "text-gray-700" : ""}>
+                            Province*
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            disabled={isPending}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select province" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {provinces.map((province) => (
+                                <SelectItem key={province} value={province}>
+                                  {province}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={examCenterForm.control}
+                      name="centerName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={inModal ? "text-gray-700" : ""}>
+                            Examination Centre Name*
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="ABC School"
+                              {...field}
+                              disabled={isPending}
+                              className={
+                                inModal
+                                  ? "bg-white border-gray-300 focus:border-[#4a6e8a] focus:ring-[#4a6e8a]"
+                                  : "bg-background"
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="flex space-x-4 mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handlePrevStep}
+                      className="flex-1"
+                      disabled={isPending}
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </Button>
+
+                    <Button
+                      type="button"
+                      onClick={handleNextToSubjects}
+                      className={`flex-1 ${inModal ? "bg-[#4a6e8a] hover:bg-[#3d5a73] text-white" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
+                      disabled={isPending}
+                    >
+                      <div className="flex items-center justify-center">
+                        Next
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </div>
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            )}
+
+            {/* Step 3: Subject Selection (Imported Component) */}
+            {step === 3 && (
+              <SubjectSelectionForm
+                userData={userData!}
+                examCenterData={examCenterData!}
+                onPrevStep={() => setStep(2)}
+                onComplete={handleRegistrationComplete}
+                inModal={inModal}
+                setIsOpen={setIsOpen}
+              />
+            )}
+          </>
         )}
 
-        {/* Step 3: Subject Selection (Imported Component) */}
-        {step === 3 && (
-          <SubjectSelectionForm
-            userData={userData!}
-            examCenterData={examCenterData!}
-            onPrevStep={() => setStep(2)}
-            onComplete={handleRegistrationComplete}
+        {/* Staff-specific forms */}
+        {userType === "staff" && step === 2 && (
+          <StaffIdentifierForm
+            onPrevStep={handlePrevStep}
+            onComplete={handleStaffRegistrationComplete}
             inModal={inModal}
-            setIsOpen={setIsOpen}
+            isPending={isPending}
           />
         )}
       </div>
