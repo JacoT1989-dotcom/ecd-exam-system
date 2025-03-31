@@ -17,21 +17,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { registerSchema, type RegisterFormValues } from "./validation";
-import {
-  examCenterSchema,
-  type ExamCenterFormValues,
-} from "./exam-validations";
+  registerSchema,
+  type RegisterFormValues,
+} from "./_validations/validation";
+import { type ExamCenterFormValues } from "./_validations/exam-validations";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
-import SubjectSelectionForm from "./SubjectSelectionForm";
+import SubjectSelectionForm from "./_components/SubjectSelectionForm";
+import ExamCenterForm from "./_components/ExamCenterForm";
 
 interface RegisterFormProps {
   inModal?: boolean;
@@ -42,17 +36,6 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
   const router = useRouter();
   const [isPending, setIsPending] = React.useState(false);
   const [step, setStep] = useState(1);
-  const [provinces, setProvinces] = useState([
-    "Eastern Cape",
-    "Free State",
-    "Gauteng",
-    "KwaZulu-Natal",
-    "Limpopo",
-    "Mpumalanga",
-    "North West",
-    "Northern Cape",
-    "Western Cape",
-  ]);
   const [userData, setUserData] = useState<RegisterFormValues | null>(null);
   const [examCenterData, setExamCenterData] =
     useState<ExamCenterFormValues | null>(null);
@@ -79,17 +62,6 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
     },
   });
 
-  // Exam center form
-  const examCenterForm = useForm<ExamCenterFormValues>({
-    resolver: zodResolver(examCenterSchema),
-    defaultValues: {
-      examinationNumber: "",
-      year: new Date().getFullYear(),
-      province: "",
-      centerName: "",
-    },
-  });
-
   // Handle direct next button click with validation
   const handleNextToExamCenter = () => {
     console.log("Next button clicked");
@@ -109,19 +81,13 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
     });
   };
 
-  // Handle next button click with validation for Step 2
-  const handleNextToSubjects = () => {
-    examCenterForm.trigger().then((isValid) => {
-      if (isValid) {
-        const values = examCenterForm.getValues();
-        setExamCenterData(values);
-        setStep(3);
-      }
-    });
-  };
-
   const handlePrevStep = () => {
     setStep(1);
+  };
+
+  const handleNextToSubjects = (examCenterValues: ExamCenterFormValues) => {
+    setExamCenterData(examCenterValues);
+    setStep(3);
   };
 
   // Handle registration completion from SubjectSelectionForm
@@ -538,145 +504,14 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
           </Form>
         )}
 
-        {/* Step 2: Exam Center Form */}
+        {/* Step 2: Exam Center Form (Now using the imported component) */}
         {step === 2 && (
-          <Form {...examCenterForm}>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={examCenterForm.control}
-                  name="examinationNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={inModal ? "text-gray-700" : ""}>
-                        Examination Number*
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="12345-678"
-                          {...field}
-                          disabled={isPending}
-                          className={
-                            inModal
-                              ? "bg-white border-gray-300 focus:border-[#4a6e8a] focus:ring-[#4a6e8a]"
-                              : "bg-background"
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={examCenterForm.control}
-                  name="year"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={inModal ? "text-gray-700" : ""}>
-                        Year*
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="2025"
-                          {...field}
-                          disabled={isPending}
-                          className={
-                            inModal
-                              ? "bg-white border-gray-300 focus:border-[#4a6e8a] focus:ring-[#4a6e8a]"
-                              : "bg-background"
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={examCenterForm.control}
-                  name="province"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={inModal ? "text-gray-700" : ""}>
-                        Province*
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        disabled={isPending}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select province" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {provinces.map((province) => (
-                            <SelectItem key={province} value={province}>
-                              {province}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={examCenterForm.control}
-                  name="centerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={inModal ? "text-gray-700" : ""}>
-                        Examination Centre Name*
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="ABC School"
-                          {...field}
-                          disabled={isPending}
-                          className={
-                            inModal
-                              ? "bg-white border-gray-300 focus:border-[#4a6e8a] focus:ring-[#4a6e8a]"
-                              : "bg-background"
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="flex space-x-4 mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePrevStep}
-                  className="flex-1"
-                  disabled={isPending}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-
-                <Button
-                  type="button"
-                  onClick={handleNextToSubjects}
-                  className={`flex-1 ${inModal ? "bg-[#4a6e8a] hover:bg-[#3d5a73] text-white" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
-                  disabled={isPending}
-                >
-                  <div className="flex items-center justify-center">
-                    Next
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </div>
-                </Button>
-              </div>
-            </form>
-          </Form>
+          <ExamCenterForm
+            onPrevStep={handlePrevStep}
+            onNextStep={handleNextToSubjects}
+            inModal={inModal}
+            isPending={isPending}
+          />
         )}
 
         {/* Step 3: Subject Selection (Imported Component) */}

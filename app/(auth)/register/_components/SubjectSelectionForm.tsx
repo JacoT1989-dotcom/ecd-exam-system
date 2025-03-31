@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, X } from "lucide-react";
 import { toast } from "sonner";
-import { signUp } from "./actions";
-import { createOrUpdateExamCenter } from "./exam-center-details";
-import { registerUserSubjects } from "./subject-actions";
-import { RegisterFormValues } from "./validation";
-import { ExamCenterFormValues } from "./exam-validations";
+import { signUp } from "../_actions/actions";
+import { createOrUpdateExamCenter } from "../_actions/exam-center-details";
+import { registerUserSubjects } from "../_actions/subject-actions";
+import { RegisterFormValues } from "../_validations/validation";
+import { ExamCenterFormValues } from "../_validations/exam-validations";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {

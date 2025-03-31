@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { hash } from "@node-rs/argon2";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import { redirect } from "next/navigation";
-import { RegisterFormValues, registerSchema } from "./validation";
+import { RegisterFormValues, registerSchema } from "../_validations/validation";
 import { Prisma, UserRole } from "@prisma/client";
 
 export async function signUp(

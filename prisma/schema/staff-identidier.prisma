@@ -1,0 +1,13 @@
+model StaffIdentifier {
+    id         String @id @default(uuid())
+    staffTitle String // Teacher, Moderator, etc.....
+    govNumber  BigInt @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    User   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String?
+
+    @@map("staff_identifiers")
+}

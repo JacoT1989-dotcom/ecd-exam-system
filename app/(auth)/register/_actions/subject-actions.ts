@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { validateRequest } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { subjectSelectionSchema } from "./subject-validations";
+import { subjectSelectionSchema } from "../_validations/subject-validations";
 
 // Define the mapping of subject codes to subject names with proper typing
 type SubjectCode =

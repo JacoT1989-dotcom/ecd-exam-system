@@ -26,6 +26,7 @@ model User {
     Subject                 Subject[]
     HandwritingEntry        HandwritingEntry[]
     ExamCenter              ExamCenter[]
+    StaffIdentifier         StaffIdentifier[]
 
     @@map("users")
 }
