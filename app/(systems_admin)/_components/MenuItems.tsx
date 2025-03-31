@@ -296,18 +296,7 @@ export function useMenuItems() {
             name: "Announcements",
             href: "/admin/communication/announcements",
           },
-          {
-            name: "Parent Portal",
-            href: "/admin/communication/parent-portal",
-          },
-          {
-            name: "Staff Communications",
-            href: "/admin/communication/staff",
-          },
-          {
-            name: "Community Engagement",
-            href: "/admin/communication/community",
-          },
+
           {
             name: "Event Calendar",
             href: "/admin/communication/events",
@@ -321,18 +310,7 @@ export function useMenuItems() {
             name: "Budget Management",
             href: "/admin/finance/budget",
           },
-          {
-            name: "Tuition & Fees",
-            href: "/admin/finance/tuition",
-          },
-          {
-            name: "Financial Aid",
-            href: "/admin/finance/aid",
-          },
-          {
-            name: "Payroll",
-            href: "/admin/finance/payroll",
-          },
+
           {
             name: "Procurement",
             href: "/admin/finance/procurement",
@@ -362,14 +340,6 @@ export function useMenuItems() {
             name: "Staff Analytics",
             href: "/admin/reports/staff",
           },
-          {
-            name: "Operational Reports",
-            href: "/admin/reports/operational",
-          },
-          {
-            name: "Custom Reports",
-            href: "/admin/reports/custom",
-          },
         ],
       },
       {
@@ -382,18 +352,6 @@ export function useMenuItems() {
           {
             name: "Access Control",
             href: "/admin/system/access",
-          },
-          {
-            name: "Data Backup",
-            href: "/admin/system/backup",
-          },
-          {
-            name: "System Settings",
-            href: "/admin/system/settings",
-          },
-          {
-            name: "Audit Logs",
-            href: "/admin/system/logs",
           },
           {
             name: "Help & Support",
