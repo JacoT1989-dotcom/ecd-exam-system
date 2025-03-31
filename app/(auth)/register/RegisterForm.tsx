@@ -57,6 +57,7 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
   const [isPending, setIsPending] = React.useState(false);
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState("student"); // Default to student registration
+  const [selectedSubjects, setSelectedSubjects] = useState<any[]>([]);
   const [provinces, setProvinces] = useState([
     "Eastern Cape",
     "Free State",
@@ -107,13 +108,14 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
 
   // Update role when user type changes
   React.useEffect(() => {
-    // Map userType to the appropriate role enum value
-    const roleMap = {
-      student: "STUDENT",
-      staff: "TEACHER", // Default staff role, can be changed in the staff form if needed
-    } as const;
-
-    userForm.setValue("role", roleMap[userType as keyof typeof roleMap]);
+    // Only change the role to STUDENT if student is selected
+    // For staff, keep the default USER role
+    if (userType === "student") {
+      userForm.setValue("role", "STUDENT");
+    } else {
+      // For staff, keep the default USER role
+      userForm.setValue("role", "USER");
+    }
   }, [userType, userForm]);
 
   // Handle user type change
@@ -811,6 +813,8 @@ const RegisterForm = ({ inModal = false, setIsOpen }: RegisterFormProps) => {
                 onComplete={handleRegistrationComplete}
                 inModal={inModal}
                 setIsOpen={setIsOpen}
+                selectedSubjects={selectedSubjects}
+                setSelectedSubjects={setSelectedSubjects}
               />
             )}
           </>

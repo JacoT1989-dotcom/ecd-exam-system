@@ -32,6 +32,8 @@ interface SubjectSelectionFormProps {
   onComplete: (userId: string, selectedSubjectCodes: string[]) => void;
   inModal?: boolean;
   setIsOpen?: (open: boolean) => void;
+  selectedSubjects: SubjectOption[];
+  setSelectedSubjects: React.Dispatch<React.SetStateAction<SubjectOption[]>>;
 }
 
 const SubjectSelectionForm: React.FC<SubjectSelectionFormProps> = ({
@@ -41,10 +43,11 @@ const SubjectSelectionForm: React.FC<SubjectSelectionFormProps> = ({
   onComplete,
   inModal = false,
   setIsOpen,
+  selectedSubjects,
+  setSelectedSubjects,
 }) => {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
-  const [selectedSubjects, setSelectedSubjects] = useState<SubjectOption[]>([]);
   const [currentSelection, setCurrentSelection] = useState<string>("");
 
   // Dummy subject list
