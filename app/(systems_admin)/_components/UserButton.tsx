@@ -33,6 +33,11 @@ export default function UserButton({ className }: UserButtonProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  // If no user is available, don't render the button
+  if (!user) {
+    return null;
+  }
+
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
     try {

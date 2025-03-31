@@ -1,121 +1,226 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { useSession } from "../SessionProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChevronDown,
-  ChevronUp,
-  ChevronRight,
-  ChevronLeft,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { navigation } from "./NavItems";
+  MenuItem,
+  MenuLink,
+  useMenuItems,
+  isMenuItem,
+  isSubmenu,
+} from "./MenuItems";
 
-const Sidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+const CollapsibleSidebar = () => {
+  const [isOpen, setIsOpen] = useState(true);
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
+  const { user } = useSession();
   const pathname = usePathname();
+  const menuItems = useMenuItems();
 
-  const toggleDropdown = (label: string) => {
-    setOpenDropdown(openDropdown === label ? null : label);
-  };
+  // Handle main content margin when sidebar toggles
+  useEffect(() => {
+    const mainContent = document.getElementById("main-content");
+    if (mainContent) {
+      if (isOpen) {
+        mainContent.style.marginLeft = "280px";
+      } else {
+        mainContent.style.marginLeft = "0px";
+      }
+    }
+  }, [isOpen]);
 
-  return (
-    <div className="relative flex h-screen">
-      {/* Mobile Overlay */}
-      {!isCollapsed && (
-        <div
-          className="fixed inset-0 z-20 bg-background/80 lg:hidden"
-          onClick={() => setIsCollapsed(true)}
-        />
-      )}
+  const toggleDropdown = useCallback((index: number) => {
+    setActiveDropdown((prev) => (prev === index ? null : index));
+    setActiveSubMenu(null);
+  }, []);
 
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "relative z-30 flex h-full flex-col bg-card border-r border-border transition-all duration-300",
-          isCollapsed ? "w-16" : "w-64",
-        )}
-      >
-        {/* Logo/Name Section */}
-        <div className="flex items-center px-3 h-16 border-b border-border">
-          {isCollapsed ? (
-            <span className="mx-auto text-xl font-bold text-primary">A</span>
-          ) : (
-            <Link href="/dashboard" className="flex items-center space-x-2">
-              <span className="text-xl font-bold text-primary">Admin</span>
-            </Link>
-          )}
-        </div>
+  const toggleSubMenu = useCallback((title: string) => {
+    setActiveSubMenu((prev) => (prev === title ? null : title));
+  }, []);
 
-        {/* Toggle Button */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-6 z-50 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 ring-1 ring-border"
+  const toggleSidebar = useCallback(() => {
+    setIsOpen((prev) => !prev);
+  }, []);
+
+  const getDropdownClasses = useCallback((isOpen: boolean) => {
+    return `transition-all duration-300 ease-in-out ${
+      isOpen ? "max-h-[60vh] overflow-y-auto" : "max-h-0"
+    } overflow-hidden`;
+  }, []);
+
+  // Render a standard link
+  const renderLink = useCallback(
+    (link: MenuLink, isSubItem = false) => {
+      const isActive = pathname === link.href;
+      return (
+        <Link
+          href={link.href}
+          className={`block ${
+            isSubItem ? "pl-12" : "pl-8"
+          } pr-4 py-2.5 text-sm transition-all duration-200 relative ${
+            isActive
+              ? "bg-primary/10 text-primary border-l-2 border-primary font-medium"
+              : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+          }`}
         >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
-        </button>
+          <span>{link.name}</span>
+        </Link>
+      );
+    },
+    [pathname],
+  );
 
-        {/* Sidebar Content */}
-        <div className="select-scroll flex h-full flex-col overflow-y-auto py-8">
-          <div className="space-y-2 px-3">
-            {navigation.map((item) => (
-              <div key={item.label}>
-                <button
-                  onClick={() => toggleDropdown(item.label)}
-                  className={cn(
-                    "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
-                    openDropdown === item.label
-                      ? "bg-secondary text-secondary-foreground"
-                      : "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground",
-                  )}
-                >
-                  <div className="flex items-center space-x-3">
-                    {item.icon && (
-                      <item.icon
-                        className={cn("h-5 w-5", isCollapsed ? "mx-auto" : "")}
-                      />
-                    )}
-                    {!isCollapsed && <span>{item.label}</span>}
-                  </div>
-                  {!isCollapsed &&
-                    (openDropdown === item.label ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    ))}
-                </button>
+  // Content rendering logic
+  const renderMenuContent = useMemo(() => {
+    const renderContent = (item: MenuItem | MenuLink, parentTitle: string) => {
+      // Check if this is a submenu item
+      if (isMenuItem(item) && isSubmenu(item)) {
+        const subMenu = item as MenuItem;
+        const isSubMenuOpen = activeSubMenu === subMenu.title;
 
-                {/* Dropdown Links */}
-                {openDropdown === item.label && !isCollapsed && (
-                  <div className="mt-1 space-y-1 px-3">
-                    {item.links.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className={cn(
-                          "block rounded-md px-8 py-2 text-sm transition-colors",
-                          pathname === link.href
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground",
-                        )}
-                      >
-                        {link.name}
-                      </Link>
-                    ))}
-                  </div>
+        return (
+          <div key={`${parentTitle}-${subMenu.title}`}>
+            <button
+              onClick={() => toggleSubMenu(subMenu.title)}
+              className={`w-full pl-8 pr-4 py-2.5 flex items-center justify-between text-sm transition-all duration-200 ${
+                isSubMenuOpen
+                  ? "bg-secondary text-foreground font-medium"
+                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+              }`}
+            >
+              <span>{subMenu.title}</span>
+              <div className="text-muted-foreground">
+                {isSubMenuOpen ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
                 )}
               </div>
-            ))}
+            </button>
+
+            <div className={getDropdownClasses(isSubMenuOpen)}>
+              {subMenu.links &&
+                subMenu.links.map((link, idx) => (
+                  <div key={`${subMenu.title}-${idx}`}>
+                    {!isMenuItem(link) && renderLink(link, true)}
+                  </div>
+                ))}
+            </div>
+          </div>
+        );
+      }
+
+      // If it's a regular link
+      if (!isMenuItem(item)) {
+        return renderLink(item, parentTitle !== "");
+      }
+
+      return null;
+    };
+
+    return renderContent;
+  }, [activeSubMenu, getDropdownClasses, toggleSubMenu, renderLink]);
+
+  // Collapsed sidebar view
+  if (!isOpen) {
+    return (
+      <div className="relative h-full flex">
+        <div className="w-0 overflow-hidden flex flex-col bg-background border-r transition-all duration-300 ease-in-out" />
+        <button
+          onClick={toggleSidebar}
+          className="fixed top-24 left-0 bg-background text-muted-foreground p-2 rounded-r border border-l-0 hover:bg-secondary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 z-40"
+          aria-label="Open sidebar"
+        >
+          <ChevronRight size={20} />
+        </button>
+      </div>
+    );
+  }
+
+  // Expanded sidebar view
+  return (
+    <div className="fixed top-[88px] left-0 bottom-0 z-40 transition-all duration-300 ease-in-out">
+      <div className="w-[280px] h-full bg-background border-r flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            {/* User Welcome Section */}
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-foreground">
+                Welcome back,
+              </h2>
+              <div className="flex items-center mt-2">
+                <span className="text-xl font-bold text-foreground">
+                  {user?.displayName || "Administrator"}
+                </span>
+                <span className="ml-2 px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
+                  {user?.role === "SYSTEM_ADMINISTRATOR"
+                    ? "Admin"
+                    : user?.role || "Admin"}
+                </span>
+              </div>
+            </div>
+
+            <nav className="space-y-0.5">
+              {menuItems.map((item, index) => {
+                const isDropdownOpen = activeDropdown === index;
+
+                return (
+                  <div key={`${item.title}-${index}`}>
+                    <button
+                      onClick={() => toggleDropdown(index)}
+                      className={`w-full px-4 py-3 flex items-center justify-between transition-all duration-200 rounded-md ${
+                        isDropdownOpen
+                          ? "bg-secondary text-foreground font-medium"
+                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                      }`}
+                    >
+                      <span className="font-medium">{item.title}</span>
+                      <div
+                        className={`text-muted-foreground transition-transform duration-200 ${
+                          isDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      >
+                        <ChevronDown size={18} />
+                      </div>
+                    </button>
+
+                    <div className={getDropdownClasses(isDropdownOpen)}>
+                      {item.links.map((link, idx) => (
+                        <div key={`${item.title}-link-${idx}`}>
+                          {isMenuItem(link) && isSubmenu(link)
+                            ? renderMenuContent(link, item.title)
+                            : !isMenuItem(link)
+                              ? renderLink(link)
+                              : null}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </nav>
           </div>
         </div>
       </div>
+
+      <button
+        onClick={toggleSidebar}
+        className="absolute top-4 -right-10 bg-background text-muted-foreground p-2 rounded-r border hover:bg-secondary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        aria-label="Close sidebar"
+      >
+        <ChevronLeft size={20} />
+      </button>
     </div>
   );
 };
 
-export default Sidebar;
+export default CollapsibleSidebar;
