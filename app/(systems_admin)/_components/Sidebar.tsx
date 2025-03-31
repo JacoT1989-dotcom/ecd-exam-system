@@ -1,30 +1,20 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useMemo } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { useSession } from "../SessionProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  MenuItem,
-  MenuLink,
-  useMenuItems,
-  isMenuItem,
-  isSubmenu,
-} from "./MenuItems";
+import { MenuItem, MenuLink, useMenuItems } from "./MenuItems";
 
 const CollapsibleSidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
   const { user } = useSession();
   const pathname = usePathname();
   const menuItems = useMenuItems();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const isAnimating = useRef(false);
 
   // Handle main content margin when sidebar toggles
   useEffect(() => {
@@ -38,35 +28,42 @@ const CollapsibleSidebar = () => {
     }
   }, [isOpen]);
 
-  const toggleDropdown = useCallback((index: number) => {
-    setActiveDropdown((prev) => (prev === index ? null : index));
-    setActiveSubMenu(null);
+  const toggleDropdown = useCallback((index: number, e: React.MouseEvent) => {
+    // Prevent the click event from bubbling up
+    e.stopPropagation();
+
+    // Only process if we're not currently animating
+    if (!isAnimating.current) {
+      isAnimating.current = true;
+
+      setActiveDropdown((prev) => (prev === index ? null : index));
+
+      // Reset the animation flag after a short delay
+      setTimeout(() => {
+        isAnimating.current = false;
+      }, 300); // Match this to your animation duration
+    }
   }, []);
 
-  const toggleSubMenu = useCallback((title: string) => {
-    setActiveSubMenu((prev) => (prev === title ? null : title));
-  }, []);
-
-  const toggleSidebar = useCallback(() => {
+  const toggleSidebar = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsOpen((prev) => !prev);
   }, []);
 
   const getDropdownClasses = useCallback((isOpen: boolean) => {
     return `transition-all duration-300 ease-in-out ${
-      isOpen ? "max-h-[60vh] overflow-y-auto" : "max-h-0"
+      isOpen ? "max-h-[300px] opacity-100" : "max-h-0 opacity-0"
     } overflow-hidden`;
   }, []);
 
   // Render a standard link
   const renderLink = useCallback(
-    (link: MenuLink, isSubItem = false) => {
+    (link: MenuLink) => {
       const isActive = pathname === link.href;
       return (
         <Link
           href={link.href}
-          className={`block ${
-            isSubItem ? "pl-12" : "pl-8"
-          } pr-4 py-2.5 text-sm transition-all duration-200 relative ${
+          className={`block pl-8 pr-4 py-2.5 text-sm transition-all duration-200 relative ${
             isActive
               ? "bg-primary/10 text-primary border-l-2 border-primary font-medium"
               : "text-muted-foreground hover:text-primary hover:bg-primary/5"
@@ -79,62 +76,11 @@ const CollapsibleSidebar = () => {
     [pathname],
   );
 
-  // Content rendering logic
-  const renderMenuContent = useMemo(() => {
-    const renderContent = (item: MenuItem | MenuLink, parentTitle: string) => {
-      // Check if this is a submenu item
-      if (isMenuItem(item) && isSubmenu(item)) {
-        const subMenu = item as MenuItem;
-        const isSubMenuOpen = activeSubMenu === subMenu.title;
-
-        return (
-          <div key={`${parentTitle}-${subMenu.title}`}>
-            <button
-              onClick={() => toggleSubMenu(subMenu.title)}
-              className={`w-full pl-8 pr-4 py-2.5 flex items-center justify-between text-sm transition-all duration-200 ${
-                isSubMenuOpen
-                  ? "bg-secondary text-foreground font-medium"
-                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-              }`}
-            >
-              <span>{subMenu.title}</span>
-              <div className="text-muted-foreground">
-                {isSubMenuOpen ? (
-                  <ChevronUp size={16} />
-                ) : (
-                  <ChevronDown size={16} />
-                )}
-              </div>
-            </button>
-
-            <div className={getDropdownClasses(isSubMenuOpen)}>
-              {subMenu.links &&
-                subMenu.links.map((link, idx) => (
-                  <div key={`${subMenu.title}-${idx}`}>
-                    {!isMenuItem(link) && renderLink(link, true)}
-                  </div>
-                ))}
-            </div>
-          </div>
-        );
-      }
-
-      // If it's a regular link
-      if (!isMenuItem(item)) {
-        return renderLink(item, parentTitle !== "");
-      }
-
-      return null;
-    };
-
-    return renderContent;
-  }, [activeSubMenu, getDropdownClasses, toggleSubMenu, renderLink]);
-
   // Collapsed sidebar view
   if (!isOpen) {
     return (
       <div className="relative h-full flex">
-        <div className="w-0 overflow-hidden flex flex-col bg-background border-r transition-all duration-300 ease-in-out" />
+        <div className="w-0 overflow-hidden flex flex-col bg-background border-r" />
         <button
           onClick={toggleSidebar}
           className="fixed top-24 left-0 bg-background text-muted-foreground p-2 rounded-r border border-l-0 hover:bg-secondary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 z-40"
@@ -148,7 +94,7 @@ const CollapsibleSidebar = () => {
 
   // Expanded sidebar view
   return (
-    <div className="fixed top-[88px] left-0 bottom-0 z-40 transition-all duration-300 ease-in-out">
+    <div className="fixed top-[88px] left-0 bottom-0 z-40" ref={sidebarRef}>
       <div className="w-[280px] h-full bg-background border-r flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
@@ -174,9 +120,9 @@ const CollapsibleSidebar = () => {
                 const isDropdownOpen = activeDropdown === index;
 
                 return (
-                  <div key={`${item.title}-${index}`}>
+                  <div key={`${item.title}-${index}`} className="bg-background">
                     <button
-                      onClick={() => toggleDropdown(index)}
+                      onClick={(e) => toggleDropdown(index, e)}
                       className={`w-full px-4 py-3 flex items-center justify-between transition-all duration-200 rounded-md ${
                         isDropdownOpen
                           ? "bg-secondary text-foreground font-medium"
@@ -196,11 +142,7 @@ const CollapsibleSidebar = () => {
                     <div className={getDropdownClasses(isDropdownOpen)}>
                       {item.links.map((link, idx) => (
                         <div key={`${item.title}-link-${idx}`}>
-                          {isMenuItem(link) && isSubmenu(link)
-                            ? renderMenuContent(link, item.title)
-                            : !isMenuItem(link)
-                              ? renderLink(link)
-                              : null}
+                          {renderLink(link)}
                         </div>
                       ))}
                     </div>

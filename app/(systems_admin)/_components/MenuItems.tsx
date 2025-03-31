@@ -5,26 +5,11 @@ import { useMemo } from "react";
 export interface MenuLink {
   name: string;
   href: string;
-  isSubmenu?: false;
 }
 
 export interface MenuItem {
   title: string;
-  links: (MenuLink | MenuItem)[];
-  isSubmenu?: boolean;
-}
-
-// Helper type guard functions
-export function isMenuItem(item: MenuItem | MenuLink): item is MenuItem {
-  return (
-    "title" in item &&
-    "links" in item &&
-    Array.isArray((item as MenuItem).links)
-  );
-}
-
-export function isSubmenu(item: MenuItem | MenuLink): boolean {
-  return isMenuItem(item) && item.isSubmenu === true;
+  links: MenuLink[];
 }
 
 export function useMenuItems() {
@@ -34,78 +19,16 @@ export function useMenuItems() {
         title: "Academic Management",
         links: [
           {
-            title: "Students",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Student Directory",
-                href: "/admin/students/directory",
-              },
-              {
-                name: "Admissions",
-                href: "/admin/students/admissions",
-              },
-              {
-                name: "Enrollment Status",
-                href: "/admin/students/enrollment-status",
-              },
-              {
-                name: "Student Progress",
-                href: "/admin/students/progress",
-              },
-              {
-                name: "Special Needs",
-                href: "/admin/students/special-needs",
-              },
-              {
-                name: "Behavioral Reports",
-                href: "/admin/students/behavioral-reports",
-              },
-            ],
+            name: "Student Directory",
+            href: "/admin/students/directory",
           },
           {
-            title: "Classes",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Class Schedule",
-                href: "/admin/classes/schedule",
-              },
-              {
-                name: "Class Rosters",
-                href: "/admin/classes/rosters",
-              },
-              {
-                name: "Room Assignments",
-                href: "/admin/classes/room-assignments",
-              },
-              {
-                name: "Elective Management",
-                href: "/admin/classes/electives",
-              },
-            ],
+            name: "Class Schedule",
+            href: "/admin/classes/schedule",
           },
           {
-            title: "Curriculum",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Course Catalog",
-                href: "/admin/curriculum/course-catalog",
-              },
-              {
-                name: "Syllabus Management",
-                href: "/admin/curriculum/syllabus",
-              },
-              {
-                name: "Learning Materials",
-                href: "/admin/curriculum/materials",
-              },
-              {
-                name: "Curriculum Development",
-                href: "/admin/curriculum/development",
-              },
-            ],
+            name: "Course Catalog",
+            href: "/admin/curriculum/course-catalog",
           },
         ],
       },
@@ -113,125 +36,33 @@ export function useMenuItems() {
         title: "Faculty & Staff",
         links: [
           {
-            title: "Teachers",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Teacher Directory",
-                href: "/admin/faculty/teachers/directory",
-              },
-              {
-                name: "Teaching Assignments",
-                href: "/admin/faculty/teachers/assignments",
-              },
-              {
-                name: "Certifications",
-                href: "/admin/faculty/teachers/certifications",
-              },
-              {
-                name: "Performance Reviews",
-                href: "/admin/faculty/teachers/reviews",
-              },
-            ],
+            name: "Teacher Directory",
+            href: "/admin/faculty/teachers/directory",
           },
           {
-            title: "Staff",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Staff Directory",
-                href: "/admin/faculty/staff/directory",
-              },
-              {
-                name: "Administrative Staff",
-                href: "/admin/faculty/staff/administrative",
-              },
-              {
-                name: "Support Staff",
-                href: "/admin/faculty/staff/support",
-              },
-            ],
+            name: "Staff Directory",
+            href: "/admin/faculty/staff/directory",
           },
           {
-            title: "Professional Development",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Training Programs",
-                href: "/admin/faculty/development/training",
-              },
-              {
-                name: "Workshops",
-                href: "/admin/faculty/development/workshops",
-              },
-              {
-                name: "Conferences",
-                href: "/admin/faculty/development/conferences",
-              },
-            ],
+            name: "Training Programs",
+            href: "/admin/faculty/development/training",
           },
         ],
       },
       {
-        title: "Assessment & Reporting",
+        title: "Assessment",
         links: [
           {
-            title: "Examinations",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Exam Schedule",
-                href: "/admin/assessment/exams/schedule",
-              },
-              {
-                name: "Create Exams",
-                href: "/admin/assessment/exams/create",
-              },
-              {
-                name: "Grade Entry",
-                href: "/admin/assessment/exams/grades",
-              },
-              {
-                name: "Standardized Tests",
-                href: "/admin/assessment/exams/standardized",
-              },
-            ],
+            name: "Exam Schedule",
+            href: "/admin/assessment/exams/schedule",
           },
           {
-            title: "Grading",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Grading Policies",
-                href: "/admin/assessment/grading/policies",
-              },
-              {
-                name: "Grade Reports",
-                href: "/admin/assessment/grading/reports",
-              },
-              {
-                name: "Academic Records",
-                href: "/admin/assessment/grading/records",
-              },
-            ],
+            name: "Grade Entry",
+            href: "/admin/assessment/exams/grades",
           },
           {
-            title: "Analytics",
-            isSubmenu: true,
-            links: [
-              {
-                name: "Performance Metrics",
-                href: "/admin/assessment/analytics/performance",
-              },
-              {
-                name: "Achievement Gaps",
-                href: "/admin/assessment/analytics/gaps",
-              },
-              {
-                name: "Learning Outcomes",
-                href: "/admin/assessment/analytics/outcomes",
-              },
-            ],
+            name: "Performance Metrics",
+            href: "/admin/assessment/analytics/performance",
           },
         ],
       },
@@ -250,18 +81,6 @@ export function useMenuItems() {
             name: "Special Education",
             href: "/admin/services/special-education",
           },
-          {
-            name: "Career Guidance",
-            href: "/admin/services/career",
-          },
-          {
-            name: "Transport Services",
-            href: "/admin/services/transport",
-          },
-          {
-            name: "Food Services",
-            href: "/admin/services/food",
-          },
         ],
       },
       {
@@ -272,20 +91,12 @@ export function useMenuItems() {
             href: "/admin/administration/calendar",
           },
           {
-            name: "Facilities Management",
+            name: "Facilities",
             href: "/admin/administration/facilities",
-          },
-          {
-            name: "Resource Allocation",
-            href: "/admin/administration/resources",
           },
           {
             name: "Policy Management",
             href: "/admin/administration/policies",
-          },
-          {
-            name: "Compliance",
-            href: "/admin/administration/compliance",
           },
         ],
       },
@@ -296,7 +107,10 @@ export function useMenuItems() {
             name: "Announcements",
             href: "/admin/communication/announcements",
           },
-
+          {
+            name: "Parent Portal",
+            href: "/admin/communication/parent-portal",
+          },
           {
             name: "Event Calendar",
             href: "/admin/communication/events",
@@ -310,10 +124,9 @@ export function useMenuItems() {
             name: "Budget Management",
             href: "/admin/finance/budget",
           },
-
           {
-            name: "Procurement",
-            href: "/admin/finance/procurement",
+            name: "Tuition & Fees",
+            href: "/admin/finance/tuition",
           },
           {
             name: "Financial Reports",
@@ -322,10 +135,10 @@ export function useMenuItems() {
         ],
       },
       {
-        title: "Reports & Analytics",
+        title: "Reports",
         links: [
           {
-            name: "Attendance Reports",
+            name: "Attendance",
             href: "/admin/reports/attendance",
           },
           {
@@ -335,10 +148,6 @@ export function useMenuItems() {
           {
             name: "Enrollment Trends",
             href: "/admin/reports/enrollment",
-          },
-          {
-            name: "Staff Analytics",
-            href: "/admin/reports/staff",
           },
         ],
       },
@@ -350,8 +159,8 @@ export function useMenuItems() {
             href: "/admin/system/users",
           },
           {
-            name: "Access Control",
-            href: "/admin/system/access",
+            name: "System Settings",
+            href: "/admin/system/settings",
           },
           {
             name: "Help & Support",
@@ -362,4 +171,9 @@ export function useMenuItems() {
     ],
     [],
   );
+}
+
+// Helper function for type checking - no longer needed since we removed the submenu complexity
+export function isMenuItem(item: MenuItem | MenuLink): item is MenuItem {
+  return "title" in item && "links" in item;
 }
