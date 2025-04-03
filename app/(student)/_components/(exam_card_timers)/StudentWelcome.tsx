@@ -6,7 +6,12 @@ import LanguageSelectionModal from "./LanguageSelectionModal";
 import { Subject, TimeRemaining } from "./types";
 import ExamCard from "./ExamCard";
 
-const StudentWelcome = () => {
+interface StudentWelcomeProps {
+  subjects: Subject[];
+  fetchError?: string;
+}
+
+const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
   const { user } = useSession();
   const [greeting, setGreeting] = useState("Good day");
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
@@ -20,133 +25,6 @@ const StudentWelcome = () => {
     setIsClient(true);
     setCurrentTime(new Date());
   }, []);
-
-  // Current date to set fixed exam dates
-  const baseDate = new Date();
-
-  // Dummy subject data with FIXED exam dates
-  const subjects: Subject[] = [
-    {
-      id: 1,
-      name: "Mathematics",
-      code: "MTH301",
-      description: "Advanced Calculus and Linear Algebra",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate() + 2,
-        8,
-        7,
-        0,
-      ), // Mar 9, 08:07 PM
-      color: "bg-blue-500",
-    },
-    {
-      id: 2,
-      name: "Physics",
-      code: "PHY201",
-      description: "Classical Mechanics and Electromagnetism",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate() + 5,
-        8,
-        7,
-        0,
-      ), // Mar 12, 08:07 PM
-      color: "bg-purple-500",
-    },
-    {
-      id: 3,
-      name: "Life Orientation",
-      code: "LIFE",
-      description: "Life Orientation",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate(),
-        9,
-        7,
-        0,
-      ), // Mar 7, 09:07 PM (today)
-      color: "bg-green-500",
-    },
-    {
-      id: 4,
-      name: "Biology",
-      code: "BIO101",
-      description: "Introduction to Molecular Biology",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate() + 1,
-        8,
-        7,
-        0,
-      ), // Mar 8, 08:07 AM
-      color: "bg-yellow-500",
-    },
-    {
-      id: 5,
-      name: "Chemistry",
-      code: "CHM202",
-      description: "Organic Chemistry",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate() + 3,
-        8,
-        7,
-        0,
-      ), // Mar 10, 08:07 PM
-      color: "bg-red-500",
-    },
-    {
-      id: 6,
-      name: "History",
-      code: "HIS305",
-      description: "Modern World History",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate() + 7,
-        8,
-        7,
-        0,
-      ), // Mar 14, 08:07 PM
-      color: "bg-indigo-500",
-    },
-    {
-      id: 7,
-      name: "Literature",
-      code: "LIT201",
-      description: "Contemporary Fiction Analysis",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate() + 4,
-        8,
-        7,
-        0,
-      ), // Mar 11, 08:07 PM
-      color: "bg-pink-500",
-    },
-    {
-      id: 8,
-      name: "Economics",
-      code: "ECO301",
-      description: "Macroeconomics and Financial Markets",
-      examDate: new Date(
-        baseDate.getFullYear(),
-        baseDate.getMonth(),
-        baseDate.getDate() + 6,
-        8,
-        7,
-        0,
-      ), // Mar 13, 08:07 PM
-      color: "bg-teal-500",
-    },
-  ];
 
   // Update current time every second to keep timers accurate - but only after initial render
   useEffect(() => {
@@ -264,27 +142,43 @@ const StudentWelcome = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {subjects.map((subject: Subject) => {
-          const timeRemaining = calculateTimeRemaining(subject.examDate);
-          const timeDisplay = isClient
-            ? formatTimeRemaining(timeRemaining)
-            : "Loading...";
-          const isAvailable = timeRemaining.isAvailable;
-          const examDateDisplay = formatExamDate(subject.examDate);
+      {fetchError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          <p>{fetchError}</p>
+        </div>
+      )}
 
-          return (
-            <ExamCard
-              key={subject.id}
-              subject={subject}
-              isAvailable={isAvailable}
-              timeDisplay={timeDisplay}
-              examDateDisplay={examDateDisplay}
-              onExamClick={handleExamClick}
-            />
-          );
-        })}
-      </div>
+      {subjects.length === 0 && !fetchError ? (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+          <p>
+            You don&apos;t have any registered subjects yet. Please contact your
+            administrator.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {subjects.map((subject: Subject) => {
+            const timeRemaining = calculateTimeRemaining(subject.examDate);
+            const timeDisplay = isClient
+              ? formatTimeRemaining(timeRemaining)
+              : "Loading...";
+            // Check if exam is available based on timer only
+            const isAvailable = timeRemaining.isAvailable;
+            const examDateDisplay = formatExamDate(subject.examDate);
+
+            return (
+              <ExamCard
+                key={subject.id}
+                subject={subject}
+                isAvailable={isAvailable}
+                timeDisplay={timeDisplay}
+                examDateDisplay={examDateDisplay}
+                onExamClick={handleExamClick}
+              />
+            );
+          })}
+        </div>
+      )}
 
       {/* Unavailable Exam Modal */}
       {showUnavailableModal && selectedSubject && (
