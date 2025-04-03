@@ -1,7 +1,6 @@
 import React from "react";
 import { formatDateForInput, formatTimeForInput } from "./date-utils";
 import { SubjectCodeInfo } from "./SubjectsTable";
-
 import { type SubjectCode } from "./exam-timers";
 
 interface SubjectRowProps {
@@ -33,7 +32,6 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
   onSaveChanges,
   loading,
 }) => {
-  // Handle direct time input without using the time picker
   const handleTimeInputChange = (
     field: "startingTime" | "dueTime",
     value: string,
@@ -41,15 +39,13 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
     onSettingChange(subject.code, field, value);
   };
 
-  // Get the appropriate time value to display in the input
   const getTimeValue = (field: "startingTime" | "dueTime") => {
     if (field === "startingTime") {
       return (
         settings.tempStartTime || formatTimeForInput(settings.startingTime)
       );
-    } else {
-      return settings.tempEndTime || formatTimeForInput(settings.dueTime);
     }
+    return settings.tempEndTime || formatTimeForInput(settings.dueTime);
   };
 
   return (
@@ -73,7 +69,12 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
           />
         ) : (
           <div className="text-sm text-gray-900">
-            {new Date(settings.examDate).toLocaleDateString()}
+            {new Date(settings.examDate).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              timeZone: "UTC",
+            })}
           </div>
         )}
       </td>
@@ -96,6 +97,7 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
             {new Date(settings.startingTime).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
+              timeZone: "UTC",
             })}
           </div>
         )}
@@ -117,6 +119,7 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
             {new Date(settings.dueTime).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
+              timeZone: "UTC",
             })}
           </div>
         )}

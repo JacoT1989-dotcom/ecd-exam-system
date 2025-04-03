@@ -53,21 +53,18 @@ export async function fetchAllSubjectCodes(): Promise<{
   error?: string;
 }> {
   try {
-    // Validate the session to ensure the user is authenticated
     const { user } = await validateRequest();
 
     if (!user) {
       return { error: "You must be logged in to access this resource" };
     }
 
-    // Check if the user is a system administrator
     if (user.role !== UserRole.SYSTEM_ADMINISTRATOR) {
       return {
         error: "You must be a system administrator to access this resource",
       };
     }
 
-    // Define the mapping of subject codes to titles
     const subjectCodesMap: Record<SubjectCode, string> = {
       MATH101: "Mathematics",
       PHYS101: "Physical Sciences",
@@ -91,7 +88,6 @@ export async function fetchAllSubjectCodes(): Promise<{
       ZUHL101: "Zulu Home Language",
     };
 
-    // Convert the map to an array of SubjectCodeInfo objects
     const subjectCodes: SubjectCodeInfo[] = Object.entries(subjectCodesMap).map(
       ([code, title]) => ({
         code: code as SubjectCode,
@@ -123,21 +119,18 @@ export async function getAllSubjectExamSettings(): Promise<{
   error?: string;
 }> {
   try {
-    // Validate the session to ensure the user is authenticated
     const { user } = await validateRequest();
 
     if (!user) {
       return { error: "You must be logged in to access this resource" };
     }
 
-    // Check if the user is a system administrator
     if (user.role !== UserRole.SYSTEM_ADMINISTRATOR) {
       return {
         error: "You must be a system administrator to access this resource",
       };
     }
 
-    // Find all unique subject codes in the database
     const uniqueSubjectCodes = await prisma.subject.findMany({
       select: {
         subjectCode: true,
@@ -149,7 +142,6 @@ export async function getAllSubjectExamSettings(): Promise<{
       distinct: ["subjectCode"],
     });
 
-    // Convert to a map of subject code to settings
     const settingsMap: Partial<
       Record<
         SubjectCode,
@@ -171,18 +163,18 @@ export async function getAllSubjectExamSettings(): Promise<{
       };
     });
 
-    // Add default settings for any missing subject codes
     const subjectCodesMap = await fetchAllSubjectCodes();
     if (subjectCodesMap.subjectCodes) {
       const now = new Date();
       const defaultExamDate = new Date(now);
-      defaultExamDate.setDate(now.getDate() + 30); // Default to 30 days from now
+      defaultExamDate.setUTCHours(0, 0, 0, 0);
+      defaultExamDate.setDate(now.getDate() + 30);
 
       const defaultStartTime = new Date(defaultExamDate);
-      defaultStartTime.setHours(9, 0, 0, 0); // 9:00 AM
+      defaultStartTime.setUTCHours(9, 0, 0, 0);
 
       const defaultDueTime = new Date(defaultExamDate);
-      defaultDueTime.setHours(12, 0, 0, 0); // 12:00 PM
+      defaultDueTime.setUTCHours(12, 0, 0, 0);
 
       subjectCodesMap.subjectCodes.forEach((subject) => {
         if (!settingsMap[subject.code]) {
@@ -203,7 +195,6 @@ export async function getAllSubjectExamSettings(): Promise<{
   }
 }
 
-// Input validation schema for bulk update
 const bulkUpdateSchema = z.array(
   z.object({
     subjectCode: z.string(),
@@ -226,48 +217,48 @@ export async function bulkUpdateExamTimes(
   error?: string;
 }> {
   try {
-    // Validate the session to ensure the user is authenticated
     const { user } = await validateRequest();
 
     if (!user) {
       return { error: "You must be logged in to perform this action" };
     }
 
-    // Check if the user is a system administrator
     if (user.role !== UserRole.SYSTEM_ADMINISTRATOR) {
       return {
         error: "You must be a system administrator to perform this action",
       };
     }
 
-    // Validate input data
     const validatedData = bulkUpdateSchema.safeParse(updates);
     if (!validatedData.success) {
       return { error: "Invalid data format for updates" };
     }
 
-    // Create a transaction for all updates
     const result = await prisma.$transaction(async (tx) => {
       let updatedCount = 0;
 
-      // Process each update
       for (const update of updates) {
-        // Validate that due time is after starting time
-        if (update.dueTime <= update.startingTime) {
+        // Convert to UTC dates
+        const utcExamDate = new Date(update.examDate);
+        utcExamDate.setUTCHours(0, 0, 0, 0);
+
+        const utcStartTime = new Date(update.startingTime);
+        const utcDueTime = new Date(update.dueTime);
+
+        if (utcDueTime <= utcStartTime) {
           throw new Error(
             `Due time must be after starting time for ${update.subjectCode}`,
           );
         }
 
-        // Update all subjects with this subject code
         const updateResult = await tx.subject.updateMany({
           where: {
             subjectCode: update.subjectCode,
           },
           data: {
-            examDate: update.examDate,
-            startingTime: update.startingTime,
-            dueTime: update.dueTime,
+            examDate: utcExamDate,
+            startingTime: utcStartTime,
+            dueTime: utcDueTime,
             isExamSubjectActive: update.isExamSubjectActive,
             updatedAt: new Date(),
           },
@@ -279,7 +270,6 @@ export async function bulkUpdateExamTimes(
       return updatedCount;
     });
 
-    // Revalidate the subjects page to reflect changes
     revalidatePath("/admin/subjects");
     revalidatePath("/dashboard");
 
@@ -310,40 +300,42 @@ export async function updateSubjectExamTime(
   error?: string;
 }> {
   try {
-    // Validate the session to ensure the user is authenticated
     const { user } = await validateRequest();
 
     if (!user) {
       return { error: "You must be logged in to perform this action" };
     }
 
-    // Check if the user is a system administrator
     if (user.role !== UserRole.SYSTEM_ADMINISTRATOR) {
       return {
         error: "You must be a system administrator to perform this action",
       };
     }
 
-    // Validate that due time is after starting time
-    if (dueTime <= startingTime) {
+    // Convert to UTC dates
+    const utcExamDate = new Date(examDate);
+    utcExamDate.setUTCHours(0, 0, 0, 0);
+
+    const utcStartTime = new Date(startingTime);
+    const utcDueTime = new Date(dueTime);
+
+    if (utcDueTime <= utcStartTime) {
       return { error: "Due time must be after starting time" };
     }
 
-    // Update all subjects with this subject code
     const updateResult = await prisma.subject.updateMany({
       where: {
         subjectCode,
       },
       data: {
-        examDate,
-        startingTime,
-        dueTime,
+        examDate: utcExamDate,
+        startingTime: utcStartTime,
+        dueTime: utcDueTime,
         isExamSubjectActive,
         updatedAt: new Date(),
       },
     });
 
-    // Revalidate the subjects page to reflect changes
     revalidatePath("/admin/subjects");
     revalidatePath("/dashboard");
 

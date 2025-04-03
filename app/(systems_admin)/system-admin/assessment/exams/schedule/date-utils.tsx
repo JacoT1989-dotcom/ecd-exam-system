@@ -1,5 +1,3 @@
-// date-utils.js
-
 /**
  * Format date for input fields
  * @param {Date} date - The date to format
@@ -8,13 +6,15 @@
 export const formatDateForInput = (date: Date): string => {
   try {
     if (!date || isNaN(date.getTime())) {
-      // Return today's date as fallback
-      return new Date().toISOString().split("T")[0];
+      // Return today's date as fallback in UTC
+      const today = new Date();
+      return today.toISOString().split("T")[0];
     }
+    // Return date part only in UTC
     return date.toISOString().split("T")[0];
   } catch (error) {
     console.error("Error formatting date for input:", error);
-    // Return today's date as fallback
+    // Return today's date as fallback in UTC
     return new Date().toISOString().split("T")[0];
   }
 };
@@ -22,146 +22,71 @@ export const formatDateForInput = (date: Date): string => {
 /**
  * Format time for input fields
  * @param {Date} date - The date to extract time from
- * @returns {string} Formatted time string HH:MM
+ * @returns {string} Formatted time string HH:MM in UTC
  */
 export const formatTimeForInput = (date: Date): string => {
   try {
     if (!date || isNaN(date.getTime())) {
-      // Return current time as fallback
-      return new Date().toISOString().split("T")[1].substring(0, 5);
+      // Return current UTC time as fallback
+      return new Date().toISOString().substring(11, 16);
     }
-    return date.toISOString().split("T")[1].substring(0, 5);
+    // Return time part only in UTC
+    return date.toISOString().substring(11, 16);
   } catch (error) {
     console.error("Error formatting time for input:", error);
-    // Return current time as fallback
-    return new Date().toISOString().split("T")[1].substring(0, 5);
+    // Return current UTC time as fallback
+    return new Date().toISOString().substring(11, 16);
   }
 };
 
 /**
- * Parse date and time strings to create a Date object
+ * Parse date and time strings to create a Date object in UTC
  * @param {string} dateStr - Date string in YYYY-MM-DD format
  * @param {string} timeStr - Time string in HH:MM format
- * @returns {Date} Combined Date object
+ * @returns {Date} Combined Date object in UTC
  */
 export const parseDateTime = (dateStr: string, timeStr: string): Date => {
   try {
-    // If either input is empty or undefined, use current date/time
+    // If either input is empty or undefined, use current UTC date/time
     if (!dateStr || !timeStr) {
       console.warn("Empty date/time input", { dateStr, timeStr });
       return new Date();
     }
 
-    // Handle potential partial time input (e.g., user typing "14:" instead of "14:00")
-    let normalizedTimeStr = timeStr;
-    if (timeStr.endsWith(":")) {
-      normalizedTimeStr = timeStr + "00";
-    } else if (timeStr.indexOf(":") === -1 && timeStr.length <= 2) {
-      normalizedTimeStr = timeStr + ":00";
+    // Normalize time string (handle partial inputs)
+    let normalizedTime = timeStr;
+    if (timeStr.length === 1) {
+      normalizedTime = `0${timeStr}:00`;
+    } else if (timeStr.length === 2) {
+      normalizedTime = `${timeStr}:00`;
+    } else if (timeStr.length === 4 && timeStr.includes(":")) {
+      normalizedTime = `0${timeStr}`;
     }
 
-    // Split and convert to numbers with validation
-    const dateParts = dateStr.split("-");
-    const timeParts = normalizedTimeStr.split(":");
+    // Create ISO string in UTC (Z)
+    const isoString = `${dateStr}T${normalizedTime}:00Z`;
+    const result = new Date(isoString);
 
-    if (dateParts.length !== 3) {
-      console.warn("Invalid date format", { dateStr });
-      return new Date();
-    }
-
-    if (timeParts.length !== 2) {
-      console.warn("Invalid time format, attempting to normalize", {
-        timeStr,
-        normalizedTimeStr,
-      });
-      // Try an alternative approach for time
-      const hour = parseInt(normalizedTimeStr.substring(0, 2) || "0", 10);
-      const minute = parseInt(normalizedTimeStr.substring(3, 5) || "0", 10);
-
-      // Convert to numbers explicitly for date
-      const year = Number(dateParts[0]);
-      const month = Number(dateParts[1]);
-      const day = Number(dateParts[2]);
-
-      if (
-        isNaN(year) ||
-        isNaN(month) ||
-        isNaN(day) ||
-        isNaN(hour) ||
-        isNaN(minute)
-      ) {
-        console.warn("Invalid values in alternative parsing", {
-          year,
-          month,
-          day,
-          hour,
-          minute,
-        });
-        return new Date();
-      }
-
-      // Create the date - month is 0-indexed in JavaScript Date
-      const monthIndex = month - 1;
-      const result = new Date(year, monthIndex, day, hour, minute);
-
-      if (isNaN(result.getTime())) {
-        console.warn("Alternative parsing generated invalid date", result);
-        return new Date();
-      }
-
-      return result;
-    }
-
-    // Standard path - convert to numbers explicitly
-    const year = Number(dateParts[0]);
-    const month = Number(dateParts[1]);
-    const day = Number(dateParts[2]);
-    const hour = Number(timeParts[0]);
-    const minute = Number(timeParts[1]);
-
-    // Validate each number individually
-    if (
-      isNaN(year) ||
-      isNaN(month) ||
-      isNaN(day) ||
-      isNaN(hour) ||
-      isNaN(minute)
-    ) {
-      console.warn("Invalid date/time values", {
-        year,
-        month,
-        day,
-        hour,
-        minute,
-      });
-      return new Date();
-    }
-
-    // Create the date - month is 0-indexed in JavaScript Date
-    const monthIndex = month - 1;
-    const result = new Date(year, monthIndex, day, hour, minute);
-
-    // Final validation of the date
+    // Validate the resulting date
     if (isNaN(result.getTime())) {
-      console.warn("Generated invalid date", result);
-      return new Date();
+      console.warn("Invalid date created from:", {
+        dateStr,
+        timeStr,
+        isoString,
+      });
+      return new Date(); // Return current date as fallback
     }
 
-    console.log("Successfully parsed date/time:", result.toISOString());
     return result;
   } catch (error) {
-    console.error("Error parsing date and time:", error, {
-      dateStr,
-      timeStr,
-    });
-    return new Date();
+    console.error("Error parsing date and time:", error, { dateStr, timeStr });
+    return new Date(); // Return current date as fallback
   }
 };
 
-// NotificationMessage.jsx
-
-import React from "react";
-
+/**
+ * Notification message component
+ */
 interface NotificationProps {
   notification: {
     type: "success" | "error";
