@@ -426,13 +426,13 @@ const ExamKanbanBoard = () => {
       )}
 
       {/* Unavailable Exam Modal */}
-      {showUnavailableModal && selectedSubject && (
+      {/* {showUnavailableModal && selectedSubject && (
         <UnavailableExamModal
           subject={selectedSubject}
-          formatExamDate={formatExamDate}
+          formatExamDate={formatExamTimeWindow}
           onClose={() => setShowUnavailableModal(false)}
         />
-      )}
+      )} */}
     </div>
   );
 };

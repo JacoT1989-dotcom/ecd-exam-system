@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { validateRequest } from "@/auth";
 import { Subject } from "./types";
 import { cache } from "react";
-import { revalidatePath } from "next/cache"; // Import revalidatePath
+import { revalidatePath } from "next/cache";
 
 // Define all subject codes
 type SubjectCode =
@@ -42,19 +42,28 @@ export const fetchStudentSubjects = cache(
     error?: string;
   }> => {
     try {
+      console.log("🔍 fetchStudentSubjects: Starting fetch operation");
+      console.log(`🔄 Force refresh requested: ${forceRefresh ? "Yes" : "No"}`);
+
       // Force revalidation if needed
       if (forceRefresh) {
+        console.log("🔄 Revalidating dashboard path");
         revalidatePath("/dashboard");
       }
 
       // Validate the session to ensure the user is authenticated
+      console.log("🔐 Validating user authentication");
       const { user } = await validateRequest();
 
       if (!user) {
+        console.log("❌ Authentication failed: No user found in session");
         return { error: "You must be logged in to view your subjects" };
       }
 
+      console.log(`✅ User authenticated: ${user.id} (${user.email})`);
+
       // Fetch the subjects from the database for this specific user
+      console.log(`📚 Fetching subjects for user: ${user.id}`);
       const subjectRecords = await prisma.subject.findMany({
         where: {
           userId: user.id,
@@ -70,8 +79,23 @@ export const fetchStudentSubjects = cache(
         },
       });
 
+      console.log(`📊 Found ${subjectRecords.length} subject records`);
+
+      // Log each subject's details
+      subjectRecords.forEach((record, index) => {
+        console.log(
+          `📝 Subject ${index + 1}: ${record.title} (${record.subjectCode})`,
+        );
+        console.log(`   - ID: ${record.id}`);
+        console.log(`   - Exam Date: ${record.examDate}`);
+        console.log(`   - Start Time: ${record.startingTime}`);
+        console.log(`   - Due Time: ${record.dueTime}`);
+        console.log(`   - Active: ${record.isExamSubjectActive}`);
+      });
+
       // Map the database records to the expected Subject type
-      const subjects = subjectRecords.map((record): Subject => {
+      console.log("🔄 Transforming database records to Subject objects");
+      const subjects = subjectRecords.map((record, index): Subject => {
         // Complete color mapping for all subject codes
         const colorMap: Record<string, string> = {
           MATH101: "bg-blue-500", // Mathematics - Blue
@@ -113,8 +137,8 @@ export const fetchStudentSubjects = cache(
           return Math.abs(hash); // Return positive number
         }
 
-        // Pass startingTime and dueTime to properly check availability
-        return {
+        // Create subject object with all time fields
+        const subject = {
           id: hashCode(record.id), // Convert UUID to consistent numeric ID
           name: record.title,
           code: record.subjectCode,
@@ -127,11 +151,24 @@ export const fetchStudentSubjects = cache(
             colorMap[record.subjectCode as keyof typeof colorMap] ||
             defaultColor,
         };
+
+        console.log(`🎨 Transformed Subject ${index + 1}:`);
+        console.log(`   - ID: ${subject.id} (hashed from ${record.id})`);
+        console.log(`   - Name: ${subject.name}`);
+        console.log(`   - Code: ${subject.code}`);
+        console.log(`   - Exam Date: ${subject.examDate}`);
+        console.log(`   - Start Time: ${subject.startingTime}`);
+        console.log(`   - Due Time: ${subject.dueTime}`);
+        console.log(`   - Active: ${subject.isActive}`);
+        console.log(`   - Color: ${subject.color}`);
+
+        return subject;
       });
 
+      console.log(`✅ Successfully transformed ${subjects.length} subjects`);
       return { subjects };
     } catch (error) {
-      console.error("Error fetching student subjects:", error);
+      console.error("❌ Error fetching student subjects:", error);
       return { error: "Failed to fetch your subjects. Please try again." };
     }
   },
@@ -139,5 +176,6 @@ export const fetchStudentSubjects = cache(
 
 // Add a utility function to force refresh data
 export async function refreshSubjectsData() {
+  console.log("🔄 refreshSubjectsData: Forcing data refresh");
   return fetchStudentSubjects(true);
 }

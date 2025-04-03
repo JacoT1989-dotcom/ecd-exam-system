@@ -69,11 +69,10 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
           />
         ) : (
           <div className="text-sm text-gray-900">
-            {new Date(settings.examDate).toLocaleDateString("en-US", {
+            {new Date(settings.examDate).toLocaleDateString("en-ZA", {
               year: "numeric",
               month: "short",
               day: "numeric",
-              timeZone: "UTC",
             })}
           </div>
         )}
@@ -94,10 +93,9 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
           />
         ) : (
           <div className="text-sm text-gray-900">
-            {new Date(settings.startingTime).toLocaleTimeString([], {
+            {new Date(settings.startingTime).toLocaleTimeString("en-ZA", {
               hour: "2-digit",
               minute: "2-digit",
-              timeZone: "UTC",
             })}
           </div>
         )}
@@ -116,10 +114,9 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
           />
         ) : (
           <div className="text-sm text-gray-900">
-            {new Date(settings.dueTime).toLocaleTimeString([], {
+            {new Date(settings.dueTime).toLocaleTimeString("en-ZA", {
               hour: "2-digit",
               minute: "2-digit",
-              timeZone: "UTC",
             })}
           </div>
         )}

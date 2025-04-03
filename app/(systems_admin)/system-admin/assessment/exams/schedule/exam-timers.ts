@@ -45,6 +45,19 @@ export interface BulkExamTimeUpdate {
 }
 
 /**
+ * Adjusts time for South African time zone by adding 2 hours
+ * This compensates for the 2-hour difference when storing in database
+ *
+ * @param date The date to adjust
+ * @returns A new date with 2 hours added
+ */
+function adjustTimeForSouthAfrica(date: Date): Date {
+  const adjustedDate = new Date(date);
+  adjustedDate.setHours(adjustedDate.getHours() + 2);
+  return adjustedDate;
+}
+
+/**
  * Fetches all available subject codes and their titles
  * Only accessible by administrators
  */
@@ -170,11 +183,13 @@ export async function getAllSubjectExamSettings(): Promise<{
       defaultExamDate.setUTCHours(0, 0, 0, 0);
       defaultExamDate.setDate(now.getDate() + 30);
 
+      // Set default start time to 9:00 AM
       const defaultStartTime = new Date(defaultExamDate);
-      defaultStartTime.setUTCHours(9, 0, 0, 0);
+      defaultStartTime.setHours(9, 0, 0, 0);
 
+      // Set default due time to 12:00 PM
       const defaultDueTime = new Date(defaultExamDate);
-      defaultDueTime.setUTCHours(12, 0, 0, 0);
+      defaultDueTime.setHours(12, 0, 0, 0);
 
       subjectCodesMap.subjectCodes.forEach((subject) => {
         if (!settingsMap[subject.code]) {
@@ -238,27 +253,50 @@ export async function bulkUpdateExamTimes(
       let updatedCount = 0;
 
       for (const update of updates) {
-        // Convert to UTC dates
-        const utcExamDate = new Date(update.examDate);
-        utcExamDate.setUTCHours(0, 0, 0, 0);
+        // Set the exam date to midnight
+        const examDate = new Date(update.examDate);
+        examDate.setHours(0, 0, 0, 0);
 
-        const utcStartTime = new Date(update.startingTime);
-        const utcDueTime = new Date(update.dueTime);
+        // Get hours and minutes from the original times
+        const startingTimeHours = update.startingTime.getHours();
+        const startingTimeMinutes = update.startingTime.getMinutes();
+        const dueTimeHours = update.dueTime.getHours();
+        const dueTimeMinutes = update.dueTime.getMinutes();
 
-        if (utcDueTime <= utcStartTime) {
+        // Create new Date objects with the exam date and adjusted times (+2 hours for South Africa)
+        const adjustedStartTime = new Date(examDate);
+        adjustedStartTime.setHours(startingTimeHours + 2, startingTimeMinutes);
+
+        const adjustedDueTime = new Date(examDate);
+        adjustedDueTime.setHours(dueTimeHours + 2, dueTimeMinutes);
+
+        // Validate time ordering
+        if (adjustedDueTime <= adjustedStartTime) {
           throw new Error(
             `Due time must be after starting time for ${update.subjectCode}`,
           );
         }
+
+        console.log(`Updating ${update.subjectCode}:`, {
+          examDate: examDate.toISOString(),
+          original: {
+            start: `${startingTimeHours}:${startingTimeMinutes}`,
+            due: `${dueTimeHours}:${dueTimeMinutes}`,
+          },
+          adjusted: {
+            start: `${adjustedStartTime.getHours()}:${adjustedStartTime.getMinutes()}`,
+            due: `${adjustedDueTime.getHours()}:${adjustedDueTime.getMinutes()}`,
+          },
+        });
 
         const updateResult = await tx.subject.updateMany({
           where: {
             subjectCode: update.subjectCode,
           },
           data: {
-            examDate: utcExamDate,
-            startingTime: utcStartTime,
-            dueTime: utcDueTime,
+            examDate: examDate,
+            startingTime: adjustedStartTime,
+            dueTime: adjustedDueTime,
             isExamSubjectActive: update.isExamSubjectActive,
             updatedAt: new Date(),
           },
@@ -312,14 +350,24 @@ export async function updateSubjectExamTime(
       };
     }
 
-    // Convert to UTC dates
-    const utcExamDate = new Date(examDate);
-    utcExamDate.setUTCHours(0, 0, 0, 0);
+    // Set the exam date to midnight
+    const normalizedExamDate = new Date(examDate);
+    normalizedExamDate.setHours(0, 0, 0, 0);
 
-    const utcStartTime = new Date(startingTime);
-    const utcDueTime = new Date(dueTime);
+    // Get hours and minutes from the original times
+    const startingTimeHours = startingTime.getHours();
+    const startingTimeMinutes = startingTime.getMinutes();
+    const dueTimeHours = dueTime.getHours();
+    const dueTimeMinutes = dueTime.getMinutes();
 
-    if (utcDueTime <= utcStartTime) {
+    // Create new Date objects with the exam date and adjusted times (+2 hours for South Africa)
+    const adjustedStartTime = new Date(normalizedExamDate);
+    adjustedStartTime.setHours(startingTimeHours + 2, startingTimeMinutes);
+
+    const adjustedDueTime = new Date(normalizedExamDate);
+    adjustedDueTime.setHours(dueTimeHours + 2, dueTimeMinutes);
+
+    if (adjustedDueTime <= adjustedStartTime) {
       return { error: "Due time must be after starting time" };
     }
 
@@ -328,9 +376,9 @@ export async function updateSubjectExamTime(
         subjectCode,
       },
       data: {
-        examDate: utcExamDate,
-        startingTime: utcStartTime,
-        dueTime: utcDueTime,
+        examDate: normalizedExamDate,
+        startingTime: adjustedStartTime,
+        dueTime: adjustedDueTime,
         isExamSubjectActive,
         updatedAt: new Date(),
       },
