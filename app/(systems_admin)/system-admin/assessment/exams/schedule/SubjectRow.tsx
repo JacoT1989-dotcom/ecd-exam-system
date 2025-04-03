@@ -121,35 +121,7 @@ const SubjectRow: React.FC<SubjectRowProps> = ({
           </div>
         )}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        {settings.isEditing ? (
-          <select
-            className="border border-gray-300 rounded p-1 w-full"
-            value={settings.isExamSubjectActive.toString()}
-            onChange={(e) =>
-              onSettingChange(
-                subject.code,
-                "isExamSubjectActive",
-                e.target.value === "true",
-              )
-            }
-            aria-label={`Status for ${subject.title}`}
-          >
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
-        ) : (
-          <span
-            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-              settings.isExamSubjectActive
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {settings.isExamSubjectActive ? "Active" : "Inactive"}
-          </span>
-        )}
-      </td>
+
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         {settings.isEditing ? (
           <div className="flex space-x-2">

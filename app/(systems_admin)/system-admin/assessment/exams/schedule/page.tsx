@@ -20,7 +20,7 @@ export default async function SubjectsSchedulePage() {
   }
 
   if (user.role !== UserRole.SYSTEM_ADMINISTRATOR) {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   try {
