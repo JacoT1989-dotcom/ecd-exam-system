@@ -20,12 +20,17 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
-  // Initial setup - runs only once
+  // Adjust time for SAST (UTC+2) by subtracting 2 hours
+  const adjustForSAST = (date: Date): Date => {
+    const adjusted = new Date(date);
+    adjusted.setHours(adjusted.getHours() - 2);
+    return adjusted;
+  };
+
   useEffect(() => {
     setIsClient(true);
     setCurrentTime(new Date());
 
-    // Set greeting based on time of day
     const hour = new Date().getHours();
     if (hour < 12) {
       setGreeting("Good morning");
@@ -36,7 +41,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     }
   }, []);
 
-  // Update current time every second to keep timers accurate
   useEffect(() => {
     if (!isClient) return;
 
@@ -47,7 +51,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     return () => clearInterval(timer);
   }, [isClient]);
 
-  // Function to determine if an exam is currently available
   const isExamAvailable = (subject: Subject): boolean => {
     if (!currentTime || !subject.isActive) {
       return false;
@@ -55,26 +58,22 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
 
     const now = currentTime.getTime();
 
-    // If no specific times are set, fall back to using exam date
     if (!subject.startingTime || !subject.dueTime) {
       return now >= subject.examDate.getTime();
     }
 
-    // Get times as timestamps for comparison
-    const startTimeMs = new Date(subject.startingTime).getTime();
-    const dueTimeMs = new Date(subject.dueTime).getTime();
+    const startTimeMs = adjustForSAST(new Date(subject.startingTime)).getTime();
+    const dueTimeMs = adjustForSAST(new Date(subject.dueTime)).getTime();
 
-    // Exam is available if current time is between start and due times
     return now >= startTimeMs && now <= dueTimeMs;
   };
 
-  // Function to get the time until a subject's exam
   const getExamTimingInfo = (
     subject: Subject,
   ): {
     timeRemaining: TimeRemaining;
     targetDate: Date;
-    isCountingDown: boolean; // true if counting down to start, false if counting down to end
+    isCountingDown: boolean;
   } => {
     if (!currentTime) {
       return {
@@ -92,9 +91,8 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
 
     const now = currentTime.getTime();
 
-    // Default to exam date if no specific times
     if (!subject.startingTime || !subject.dueTime) {
-      const targetDate = new Date(subject.examDate);
+      const targetDate = adjustForSAST(new Date(subject.examDate));
       const difference = targetDate.getTime() - now;
       const isAvailable = difference <= 0;
 
@@ -105,11 +103,9 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
       };
     }
 
-    // Get times as Date objects for calculation
-    const startTime = new Date(subject.startingTime);
-    const dueTime = new Date(subject.dueTime);
+    const startTime = adjustForSAST(new Date(subject.startingTime));
+    const dueTime = adjustForSAST(new Date(subject.dueTime));
 
-    // If before start time, count down to start time
     if (now < startTime.getTime()) {
       return {
         timeRemaining: calculateTimeRemaining(startTime),
@@ -118,7 +114,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
       };
     }
 
-    // If between start and due time, count down to due time
     if (now <= dueTime.getTime()) {
       return {
         timeRemaining: {
@@ -130,7 +125,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
       };
     }
 
-    // If after due time, exam is over
     return {
       timeRemaining: {
         days: 0,
@@ -144,27 +138,22 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     };
   };
 
-  // Function to calculate remaining time until target date
   const calculateTimeRemaining = (targetDate: Date): TimeRemaining => {
     if (!currentTime) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0, isAvailable: false };
     }
 
-    // Direct time comparison without UTC conversion
     const difference = targetDate.getTime() - currentTime.getTime();
 
-    // Return zeros if the target date is in the past
     if (difference <= 0) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0, isAvailable: true };
     }
 
-    // Calculate time units
     const totalSeconds = Math.floor(difference / 1000);
     const totalMinutes = Math.floor(totalSeconds / 60);
     const totalHours = Math.floor(totalMinutes / 60);
     const days = Math.floor(totalHours / 24);
 
-    // Calculate remaining units
     const hours = totalHours % 24;
     const minutes = totalMinutes % 60;
     const seconds = totalSeconds % 60;
@@ -172,7 +161,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     return { days, hours, minutes, seconds, isAvailable: false };
   };
 
-  // Format time remaining as HH:MM:SS with days in brackets
   const formatTimeRemaining = (
     timeObj: TimeRemaining,
     isCountingDown: boolean,
@@ -191,38 +179,31 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     return "Starts in " + formatTimeParts(timeObj);
   };
 
-  // Helper to format time parts consistently
   const formatTimeParts = (timeObj: TimeRemaining): string => {
-    // Format as HH:MM:SS for display
     const formattedTime = [
       String(timeObj.hours).padStart(2, "0"),
       String(timeObj.minutes).padStart(2, "0"),
       String(timeObj.seconds).padStart(2, "0"),
     ].join(":");
 
-    // Calculate total hours including days
     const totalHours = timeObj.hours + timeObj.days * 24;
 
-    // Add days in brackets if there are any
     return timeObj.days > 0
       ? `${totalHours}:${String(timeObj.minutes).padStart(2, "0")}:${String(timeObj.seconds).padStart(2, "0")} (${timeObj.days} days)`
       : formattedTime;
   };
 
-  // Format exam time window for display (startTime - dueTime)
   const formatExamTimeWindow = (subject: Subject): string => {
     if (!subject.startingTime || !subject.dueTime) {
       return formatExamDate(subject.examDate);
     }
 
-    const startTime = new Date(subject.startingTime);
-    const dueTime = new Date(subject.dueTime);
+    const startTime = adjustForSAST(new Date(subject.startingTime));
+    const dueTime = adjustForSAST(new Date(subject.dueTime));
 
-    // Get month and day from the database dates
     const month = startTime.toLocaleString("en-ZA", { month: "short" });
-    const day = startTime.getDate(); // Use local date, not UTC
+    const day = startTime.getDate();
 
-    // Get hours and minutes
     const startHour = startTime.getHours();
     const startMinute = String(startTime.getMinutes()).padStart(2, "0");
     const startPeriod = startHour >= 12 ? "PM" : "AM";
@@ -236,35 +217,29 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     return `${month} ${day}, ${displayStartHour}:${startMinute} ${startPeriod} - ${displayDueHour}:${dueMinute} ${duePeriod}`;
   };
 
-  // Format exam date for display
   const formatExamDate = (date: Date): string => {
-    const month = date.toLocaleString("en-ZA", { month: "short" });
-    const day = date.getDate(); // Use local date, not UTC
-    const hour = date.getHours(); // Use local hours
-    const minute = String(date.getMinutes()).padStart(2, "0");
+    const adjustedDate = adjustForSAST(new Date(date));
+    const month = adjustedDate.toLocaleString("en-ZA", { month: "short" });
+    const day = adjustedDate.getDate();
+    const hour = adjustedDate.getHours();
+    const minute = String(adjustedDate.getMinutes()).padStart(2, "0");
     const period = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
+    const displayHour = hour % 12 || 12;
 
     return `${month} ${day}, ${displayHour}:${minute} ${period}`;
   };
 
-  // Handle exam card click
   const handleExamClick = (subject: Subject): void => {
     setSelectedSubject(subject);
-
-    // Check proper availability based on start/due times
     const isAvailable = isExamAvailable(subject);
 
     if (isAvailable && user) {
-      // Show language selection modal for available exams
       setShowLanguageModal(true);
     } else {
-      // Show unavailable modal for unavailable exams
       setShowUnavailableModal(true);
     }
   };
 
-  // Get exam status for UI display and interaction
   const getExamStatus = (
     subject: Subject,
   ): {
@@ -287,7 +262,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
 
     const now = currentTime.getTime();
 
-    // Fall back to exam date if specific times not available
     if (!subject.startingTime || !subject.dueTime) {
       const isAvailable = now >= subject.examDate.getTime() && subject.isActive;
       return {
@@ -301,11 +275,9 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
       };
     }
 
-    // Get start and due times
-    const startTime = new Date(subject.startingTime);
-    const dueTime = new Date(subject.dueTime);
+    const startTime = adjustForSAST(new Date(subject.startingTime));
+    const dueTime = adjustForSAST(new Date(subject.dueTime));
 
-    // Exam has ended
     if (now > dueTime.getTime()) {
       return {
         isEnded: true,
@@ -316,7 +288,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
       };
     }
 
-    // Exam is active now
     if (
       now >= startTime.getTime() &&
       now <= dueTime.getTime() &&
@@ -331,7 +302,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
       };
     }
 
-    // Exam is upcoming
     return {
       isEnded: false,
       isAvailable: false,
@@ -373,11 +343,9 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {subjects.map((subject: Subject) => {
-            // Get detailed timing info for the exam
             const examTimingInfo = getExamTimingInfo(subject);
             const status = getExamStatus(subject);
 
-            // Format display strings
             const timeDisplay = isClient
               ? formatTimeRemaining(
                   examTimingInfo.timeRemaining,
@@ -404,7 +372,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
         </div>
       )}
 
-      {/* Unavailable Exam Modal */}
       {showUnavailableModal && selectedSubject && (
         <UnavailableExamModal
           subject={selectedSubject}
@@ -413,7 +380,6 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
         />
       )}
 
-      {/* Language Selection Modal */}
       {showLanguageModal && selectedSubject && (
         <LanguageSelectionModal
           subject={selectedSubject}
