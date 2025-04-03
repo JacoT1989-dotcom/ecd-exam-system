@@ -54,7 +54,7 @@ export function useMenuItems() {
         links: [
           {
             name: "Schedule Exam",
-            href: "/admin/assessment/exams/schedule",
+            href: "/system-admin/assessment/exams/schedule",
           },
           {
             name: "Grade Entry",
