@@ -2,11 +2,11 @@ model Subject {
     id String @id @default(uuid())
 
     title               String
-    subjectCode         String   @map("subject_code") // Remove the @unique attribute
-    startingTime        DateTime @map("starting_time")
-    dueTime             DateTime @map("due_time")
-    examDate            DateTime @map("exam_date")
-    isExamSubjectActive Boolean  @default(false) @map("is_exam_subject_active")
+    subjectCode         String    @map("subject_code")
+    startingTime        DateTime? @map("starting_time") // Optional field
+    dueTime             DateTime? @map("due_time") // Optional field
+    examDate            DateTime? @map("exam_date") // Optional field
+    isExamSubjectActive Boolean   @default(false) @map("is_exam_subject_active")
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
@@ -14,7 +14,7 @@ model Subject {
     userId String
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    // Add a composite unique constraint instead if needed
+    // Add a composite unique constraint
     @@unique([userId, subjectCode]) // This ensures a user can't register the same subject twice
     @@map("subjects")
 }

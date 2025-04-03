@@ -86,11 +86,6 @@ export async function registerUserSubjects(
 
     console.log(`Registering subjects for user ID: ${userIdToUse}`);
 
-    // Use a placeholder date for required date fields
-    // These will need to be updated later by an admin
-    const placeholderDate = new Date();
-    placeholderDate.setFullYear(placeholderDate.getFullYear() + 1); // Set to next year
-
     // Process each subject code
     for (const code of validatedData.selectedSubjects) {
       // Type-safe way to get the subject name
@@ -120,13 +115,15 @@ export async function registerUserSubjects(
 
       try {
         // Create the subject for this specific user
+        // Note: startingTime, dueTime, and examDate are now passed as null
+        // This assumes your schema has been updated to make these fields optional (DateTime?)
         await prisma.subject.create({
           data: {
             title: subjectName,
             subjectCode: code,
-            startingTime: placeholderDate,
-            dueTime: placeholderDate,
-            examDate: placeholderDate,
+            startingTime: null,
+            dueTime: null,
+            examDate: null,
             isExamSubjectActive: false,
             userId: userIdToUse,
           },
