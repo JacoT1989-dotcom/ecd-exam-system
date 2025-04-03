@@ -7,6 +7,13 @@ import { useState, useEffect, useRef } from "react";
 import { useSession, SessionUser } from "../SessionProvider";
 import ProfileModal from "./(profile_modal)/ProfileModal";
 
+// Ensure the SessionUser type includes subjectCount
+declare module "../SessionProvider" {
+  interface SessionUser {
+    subjectCount?: number;
+  }
+}
+
 // Define icon components
 const DashboardIcon = () => (
   <svg
@@ -167,6 +174,25 @@ const Sidebar = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const profileSectionRef = useRef<HTMLDivElement>(null);
 
+  // Debug log user object on component mount
+  useEffect(() => {
+    console.log("[CLIENT] Sidebar: User object received:", user);
+    console.log("[CLIENT] Sidebar: User subject count:", user?.subjectCount);
+
+    // Check if the subjectCount property exists on the user object
+    if (user) {
+      console.log(
+        "[CLIENT] Subject count property exists:",
+        "subjectCount" in user,
+      );
+      console.log("[CLIENT] User object keys:", Object.keys(user));
+      console.log(
+        "[CLIENT] User object prototype:",
+        Object.getPrototypeOf(user),
+      );
+    }
+  }, [user]);
+
   // Load collapse state from localStorage on client side
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -201,6 +227,32 @@ const Sidebar = () => {
     setIsProfileModalOpen(true);
     // Prevent any parent click events
     event.stopPropagation();
+  };
+
+  // Get subject count with multiple fallback methods
+  const getSubjectCount = () => {
+    console.log("[CLIENT] Getting subject count...");
+
+    // Method 1: Direct property access with optional chaining
+    const directAccess = user?.subjectCount;
+    console.log("[CLIENT] Direct property access:", directAccess);
+
+    // Method 2: Using 'in' operator to check if property exists
+    const hasProperty = user && "subjectCount" in user;
+    console.log("[CLIENT] Property exists check:", hasProperty);
+
+    // Method 3: Try different ways to access the property
+    const userAny = user as any;
+    const anyAccess = userAny?.subjectCount;
+    console.log("[CLIENT] Access via any:", anyAccess);
+
+    // Method 4: Check all properties
+    if (user) {
+      console.log("[CLIENT] All user properties:", Object.entries(user));
+    }
+
+    // Use the first available value or default to 0
+    return directAccess ?? 0;
   };
 
   return (
@@ -277,7 +329,12 @@ const Sidebar = () => {
                 <span className="text-sm text-gray-200">Grade</span>
               </div>
               <div className="text-center">
-                <span className="block text-2xl font-bold text-white">8</span>
+                <span
+                  className="block text-2xl font-bold text-white"
+                  data-testid="subject-count" // Add testid for easier debugging
+                >
+                  {getSubjectCount()}
+                </span>
                 <span className="text-sm text-gray-200">Subjects</span>
               </div>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { Session as LuciaSession } from "lucia";
 
 export type UserRole =
@@ -22,6 +22,7 @@ export type UserRole =
   | "PARENT_GUARDIAN"
   | "SUPER_ADMINISTRATOR";
 
+// Keep subjectCount as optional to match with User from validateRequest
 export interface SessionUser {
   id: string;
   username: string;
@@ -38,6 +39,7 @@ export interface SessionUser {
   avatarUrl: string | null;
   backgroundUrl: string | null;
   role: UserRole;
+  subjectCount?: number; // Optional property
 }
 
 export interface SessionWithUser extends LuciaSession {
@@ -49,18 +51,31 @@ interface SessionContextValue {
   session: SessionWithUser | null;
 }
 
-const SessionContext = createContext<SessionContextValue | null>(null);
-
-export default function SessionProvider({
-  children,
-  value,
-}: {
+// Define the props interface for SessionProvider
+interface SessionProviderProps {
   children: React.ReactNode;
   value: {
     user: SessionUser | null;
     session: LuciaSession | null;
   };
-}) {
+}
+
+const SessionContext = createContext<SessionContextValue | null>(null);
+
+export default function SessionProvider({
+  children,
+  value,
+}: SessionProviderProps) {
+  // Debug log the incoming value
+  useEffect(() => {
+    console.log("[CLIENT] SessionProvider received user:", value.user);
+    if (value.user) {
+      console.log("[CLIENT] User subject count:", value.user.subjectCount);
+    }
+  }, [value]);
+
+  // The user already has the subjectCount property because we added it directly
+  // in the CustomerLayout component, so we don't need to modify it here
   const sessionValue: SessionContextValue = {
     user: value.user,
     session: value.session
