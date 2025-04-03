@@ -6,6 +6,9 @@ export interface Subject {
   code: string;
   description: string;
   examDate: Date;
+  startingTime?: Date; // Add startingTime
+  dueTime?: Date; // Add dueTime
+  isActive?: boolean; // Add isActive flag
   color: string;
 }
 

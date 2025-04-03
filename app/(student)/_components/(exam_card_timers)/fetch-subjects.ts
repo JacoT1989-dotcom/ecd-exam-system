@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { validateRequest } from "@/auth";
 import { Subject } from "./types";
 import { cache } from "react";
+import { revalidatePath } from "next/cache"; // Import revalidatePath
 
 // Define all subject codes
 type SubjectCode =
@@ -31,14 +32,21 @@ type SubjectCode =
 /**
  * Fetches subjects registered for the currently authenticated student
  * This function is secured and only returns subjects for the authenticated user
- * It's wrapped in React.cache to prevent multiple executions during SSR
+ * We'll also add a way to force revalidation when needed
  */
 export const fetchStudentSubjects = cache(
-  async (): Promise<{
+  async (
+    forceRefresh?: boolean,
+  ): Promise<{
     subjects?: Subject[];
     error?: string;
   }> => {
     try {
+      // Force revalidation if needed
+      if (forceRefresh) {
+        revalidatePath("/dashboard");
+      }
+
       // Validate the session to ensure the user is authenticated
       const { user } = await validateRequest();
 
@@ -105,12 +113,16 @@ export const fetchStudentSubjects = cache(
           return Math.abs(hash); // Return positive number
         }
 
+        // Pass startingTime and dueTime to properly check availability
         return {
           id: hashCode(record.id), // Convert UUID to consistent numeric ID
           name: record.title,
           code: record.subjectCode,
           description: `${record.title} Examination`,
           examDate: record.examDate,
+          startingTime: record.startingTime, // Include start time
+          dueTime: record.dueTime, // Include due time
+          isActive: record.isExamSubjectActive, // Include active status
           color:
             colorMap[record.subjectCode as keyof typeof colorMap] ||
             defaultColor,
@@ -124,3 +136,8 @@ export const fetchStudentSubjects = cache(
     }
   },
 );
+
+// Add a utility function to force refresh data
+export async function refreshSubjectsData() {
+  return fetchStudentSubjects(true);
+}
