@@ -125,29 +125,21 @@ const ExamCard = ({
             <span className="text-sm font-medium">{examDateDisplay}</span>
           </div>
 
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-500">
-              {correctedStatus.isAvailable
-                ? "Time remaining:"
-                : isNotScheduled
-                  ? "Status:"
-                  : expired
-                    ? "Status:"
-                    : isEnded
-                      ? "Status:"
-                      : "Time until start:"}
-            </span>
-            <span className={`text-sm font-bold ${getTimeDisplayColor()}`}>
-              {isNotScheduled
-                ? "Not scheduled"
-                : expired ||
-                    (timeDisplay === "Starts in 00:00:00" && !isNotScheduled)
-                  ? "Expired"
-                  : timeDisplay}
-            </span>
-          </div>
+          {/* For upcoming or active exams, show time until start/remaining */}
+          {!expired && !isNotScheduled && !isEnded && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-500">
+                {correctedStatus.isAvailable
+                  ? "Time remaining:"
+                  : "Time until start:"}
+              </span>
+              <span className={`text-sm font-bold ${getTimeDisplayColor()}`}>
+                {timeDisplay}
+              </span>
+            </div>
+          )}
 
-          {/* Add status indicator - always show but with correct styling */}
+          {/* Single status indicator for all types of exams */}
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-500">Status:</span>
             {isNotScheduled ? (
