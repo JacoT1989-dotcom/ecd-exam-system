@@ -5,10 +5,11 @@ export interface Subject {
   name: string;
   code: string;
   description: string;
-  examDate: Date;
-  startingTime?: Date; // Add startingTime
-  dueTime?: Date; // Add dueTime
-  isActive?: boolean; // Add isActive flag
+  examDate: Date | null; // Allow null values
+  startingTime: Date | null; // Allow null values
+  dueTime: Date | null; // Allow null values
+  isActive?: boolean;
+  isScheduled?: boolean; // Add flag to indicate if exam is scheduled
   color: string;
 }
 

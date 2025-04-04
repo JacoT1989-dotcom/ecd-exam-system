@@ -61,6 +61,12 @@ export const fetchStudentSubjects = cache(
         },
       });
 
+      // Log raw database results to verify null values
+      console.log(
+        "Raw subject records from database:",
+        JSON.stringify(subjectRecords, null, 2),
+      );
+
       const colorMap: Record<string, string> = {
         MATH101: "bg-blue-500",
         PHYS101: "bg-purple-500",
@@ -98,23 +104,51 @@ export const fetchStudentSubjects = cache(
       }
 
       const subjects = subjectRecords.map((record): Subject => {
+        // Check for null values and log them
+        if (record.examDate === null) {
+          console.log(
+            `Subject ${record.subjectCode} (${record.title}) has null examDate`,
+          );
+        }
+        if (record.startingTime === null) {
+          console.log(
+            `Subject ${record.subjectCode} (${record.title}) has null startingTime`,
+          );
+        }
+        if (record.dueTime === null) {
+          console.log(
+            `Subject ${record.subjectCode} (${record.title}) has null dueTime`,
+          );
+        }
+
+        // Create a flag for unscheduled exams instead of using the current date
+        const isExamScheduled =
+          record.examDate !== null &&
+          record.startingTime !== null &&
+          record.dueTime !== null;
+
         return {
           id: hashCode(record.id),
           name: record.title,
           code: record.subjectCode,
           description: `${record.title} Examination`,
-          examDate: record.examDate ?? new Date(), // Provide default date if null
-          startingTime: record.startingTime ?? new Date(), // Provide default time if null
-          dueTime: record.dueTime ?? new Date(), // Provide default time if null
+          examDate: record.examDate, // Don't provide default date
+          startingTime: record.startingTime, // Don't provide default time
+          dueTime: record.dueTime, // Don't provide default time
           isActive: record.isExamSubjectActive,
+          isScheduled: isExamScheduled, // Add this flag to indicate if the exam is scheduled
           color:
             colorMap[record.subjectCode as keyof typeof colorMap] ||
             defaultColor,
         };
       });
 
+      // Log transformed subjects to check values
+      console.log("Transformed subjects:", JSON.stringify(subjects, null, 2));
+
       return { subjects };
     } catch (error) {
+      console.error("Error fetching subjects:", error);
       return { error: "Failed to fetch your subjects. Please try again." };
     }
   },

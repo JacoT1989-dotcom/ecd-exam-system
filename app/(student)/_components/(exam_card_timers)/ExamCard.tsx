@@ -2,6 +2,8 @@
 
 import { Subject } from "./types";
 import { useSession } from "../../SessionProvider";
+import ExamActionButtons from "./ExamActionButtons";
+import { useEffect, useState } from "react";
 
 interface ExamCardProps {
   subject: Subject;
@@ -25,6 +27,11 @@ const ExamCard = ({
   onExamClick,
 }: ExamCardProps) => {
   const { user } = useSession();
+  const [correctedStatus, setCorrectedStatus] = useState({
+    statusText,
+    statusClass,
+    isAvailable,
+  });
 
   // Create the correct URL path format
   const examUrl = user ? `/students/exam/subjects` : "#";
@@ -32,18 +39,33 @@ const ExamCard = ({
   // Determine time display color based on status
   const getTimeDisplayColor = () => {
     if (isEnded) return "text-gray-500";
-    if (isAvailable) return "text-green-600";
+    if (correctedStatus.isAvailable) return "text-green-600";
     return "text-blue-600";
   };
 
+  useEffect(() => {
+    // Check if the timeDisplay indicates an exam is in progress ("Ends in...")
+    const isExamActive = timeDisplay.startsWith("Ends in");
+
+    // If timeDisplay shows "Ends in" but status is not available, correct it
+    if (isExamActive && !isAvailable) {
+      setCorrectedStatus({
+        statusText: "Start Exam",
+        statusClass: "bg-[#3e6788] hover:bg-[#2d4d66] text-white",
+        isAvailable: true,
+      });
+    } else {
+      setCorrectedStatus({
+        statusText,
+        statusClass,
+        isAvailable,
+      });
+    }
+  }, [timeDisplay, statusText, statusClass, isAvailable]);
+
   return (
-    <a
-      href={isAvailable ? examUrl : "#"}
-      onClick={(e) => {
-        e.preventDefault();
-        onExamClick(subject);
-      }}
-      className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer flex flex-col h-full ${isEnded ? "opacity-75" : ""}`}
+    <div
+      className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full ${isEnded ? "opacity-75" : ""}`}
     >
       <div className={`${subject.color} h-2 w-full`}></div>
       <div className="p-6 flex flex-col h-full">
@@ -70,7 +92,7 @@ const ExamCard = ({
 
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-500">
-              {isAvailable
+              {correctedStatus.isAvailable
                 ? "Time remaining:"
                 : isEnded
                   ? "Status:"
@@ -86,27 +108,34 @@ const ExamCard = ({
             <span className="text-sm font-medium text-gray-500">Status:</span>
             <span
               className={`text-xs px-2 py-1 rounded-full ${
-                isAvailable
+                correctedStatus.isAvailable
                   ? "bg-green-100 text-green-800"
                   : isEnded
                     ? "bg-gray-100 text-gray-800"
                     : "bg-blue-100 text-blue-800"
               }`}
             >
-              {isAvailable ? "Active" : isEnded ? "Ended" : "Upcoming"}
+              {correctedStatus.isAvailable
+                ? "Active"
+                : isEnded
+                  ? "Ended"
+                  : "Upcoming"}
             </span>
           </div>
         </div>
 
-        <div className="mt-4 h-10 flex items-center justify-center">
-          <div
-            className={`w-full py-2 px-4 rounded font-medium text-center transition-colors duration-300 ${statusClass}`}
-          >
-            {statusText}
-          </div>
+        <div className="mt-4">
+          {/* Use our ExamActionButtons component with corrected status */}
+          <ExamActionButtons
+            subject={subject}
+            isAvailable={correctedStatus.isAvailable}
+            isEnded={isEnded}
+            statusText={correctedStatus.statusText}
+            statusClass={correctedStatus.statusClass}
+          />
         </div>
       </div>
-    </a>
+    </div>
   );
 };
 

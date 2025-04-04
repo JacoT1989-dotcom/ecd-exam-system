@@ -3,24 +3,10 @@ import { useEffect, useState } from "react";
 import { useSession } from "../../SessionProvider";
 import LanguageSelectionModal from "../../_components/(exam_card_timers)/LanguageSelectionModal";
 import UnavailableExamModal from "../../_components/(exam_card_timers)/UnavailableExamModal";
-
-// Define types locally in this file
-interface Subject {
-  id: number;
-  name: string;
-  code: string;
-  description: string;
-  examDate: Date;
-  color: string;
-}
-
-interface TimeRemaining {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-  isAvailable: boolean;
-}
+import {
+  Subject,
+  TimeRemaining,
+} from "../../_components/(exam_card_timers)/types";
 
 const ExamKanbanBoard = () => {
   const { user } = useSession();
@@ -32,29 +18,22 @@ const ExamKanbanBoard = () => {
   const [showUnavailableModal, setShowUnavailableModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
-  // Set isClient to true when component mounts (client-side only)
   useEffect(() => {
     setIsClient(true);
     setCurrentTime(new Date());
-
-    // Initially, no exams are completed
     setCompletedExams([]);
   }, []);
 
-  // Current date to set fixed exam dates
   const baseDate = new Date();
-
-  // Force the Life Orientation date to be in the past to make it available
   const lifeOrientationDate = new Date(
     baseDate.getFullYear(),
     baseDate.getMonth(),
-    baseDate.getDate() - 1, // yesterday
+    baseDate.getDate() - 1,
     9,
     7,
     0,
   );
 
-  // Dummy subject data with FIXED exam dates
   const subjects: Subject[] = [
     {
       id: 1,
@@ -69,6 +48,10 @@ const ExamKanbanBoard = () => {
         7,
         0,
       ),
+      startingTime: null,
+      dueTime: null,
+      isActive: true,
+      isScheduled: true,
       color: "bg-blue-500",
     },
     {
@@ -84,6 +67,10 @@ const ExamKanbanBoard = () => {
         7,
         0,
       ),
+      startingTime: null,
+      dueTime: null,
+      isActive: true,
+      isScheduled: true,
       color: "bg-purple-500",
     },
     {
@@ -91,7 +78,11 @@ const ExamKanbanBoard = () => {
       name: "Life Orientation",
       code: "LIFE",
       description: "Life Orientation",
-      examDate: lifeOrientationDate, // Make it already available
+      examDate: lifeOrientationDate,
+      startingTime: null,
+      dueTime: null,
+      isActive: true,
+      isScheduled: true,
       color: "bg-green-500",
     },
     {
@@ -107,6 +98,10 @@ const ExamKanbanBoard = () => {
         7,
         0,
       ),
+      startingTime: null,
+      dueTime: null,
+      isActive: true,
+      isScheduled: true,
       color: "bg-yellow-500",
     },
     {
@@ -122,6 +117,10 @@ const ExamKanbanBoard = () => {
         7,
         0,
       ),
+      startingTime: null,
+      dueTime: null,
+      isActive: true,
+      isScheduled: true,
       color: "bg-red-500",
     },
     {
@@ -137,6 +136,10 @@ const ExamKanbanBoard = () => {
         7,
         0,
       ),
+      startingTime: null,
+      dueTime: null,
+      isActive: true,
+      isScheduled: true,
       color: "bg-indigo-500",
     },
     {
@@ -152,6 +155,10 @@ const ExamKanbanBoard = () => {
         7,
         0,
       ),
+      startingTime: null,
+      dueTime: null,
+      isActive: true,
+      isScheduled: true,
       color: "bg-pink-500",
     },
     {
@@ -167,11 +174,14 @@ const ExamKanbanBoard = () => {
         7,
         0,
       ),
+      startingTime: null,
+      dueTime: null,
+      isActive: true,
+      isScheduled: true,
       color: "bg-teal-500",
     },
   ];
 
-  // Update current time every second to keep timers accurate - but only after initial render
   useEffect(() => {
     if (!isClient) return;
 
@@ -185,7 +195,6 @@ const ExamKanbanBoard = () => {
   useEffect(() => {
     if (!isClient) return;
 
-    // Set greeting based on time of day
     const hour = new Date().getHours();
     if (hour < 12) {
       setGreeting("Good morning");
@@ -196,27 +205,22 @@ const ExamKanbanBoard = () => {
     }
   }, [isClient]);
 
-  // Function to calculate remaining time until exam
-  const calculateTimeRemaining = (examDate: Date): TimeRemaining => {
-    // If not on client yet, return a default state to prevent hydration errors
-    if (!isClient) {
+  const calculateTimeRemaining = (examDate: Date | null): TimeRemaining => {
+    if (!isClient || !examDate) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0, isAvailable: false };
     }
 
     const difference = examDate.getTime() - currentTime.getTime();
 
-    // Return zeros if the exam date is in the past
     if (difference <= 0) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0, isAvailable: true };
     }
 
-    // Calculate time units
     const totalSeconds = Math.floor(difference / 1000);
     const totalMinutes = Math.floor(totalSeconds / 60);
     const totalHours = Math.floor(totalMinutes / 60);
     const days = Math.floor(totalHours / 24);
 
-    // Calculate remaining units (traditional countdown style)
     const hours = totalHours % 24;
     const minutes = totalMinutes % 60;
     const seconds = totalSeconds % 60;
@@ -224,59 +228,52 @@ const ExamKanbanBoard = () => {
     return { days, hours, minutes, seconds, isAvailable: false };
   };
 
-  // Format time remaining as HH:MM:SS with days in brackets
   const formatTimeRemaining = (timeObj: TimeRemaining): string => {
     if (!isClient) {
-      return "Loading..."; // Only show a placeholder during server rendering
+      return "Loading...";
     }
 
     if (timeObj.isAvailable) {
       return "Available now";
     }
 
-    // Format as HH:MM:SS for display
     const formattedTime = [
       String(timeObj.hours).padStart(2, "0"),
       String(timeObj.minutes).padStart(2, "0"),
       String(timeObj.seconds).padStart(2, "0"),
     ].join(":");
 
-    // Calculate total hours including days
     const totalHours = timeObj.hours + timeObj.days * 24;
 
-    // Add days in brackets if there are any
     return timeObj.days > 0
       ? `${totalHours}:${String(timeObj.minutes).padStart(2, "0")}:${String(timeObj.seconds).padStart(2, "0")} (${timeObj.days} days)`
       : formattedTime;
   };
 
-  // Format exam date for display
-  const formatExamDate = (date: Date): string => {
+  const formatExamDate = (date: Date | null): string => {
+    if (!date) return "Not scheduled";
+
     const month = date.toLocaleString("en-US", { month: "short" });
     const day = date.getDate();
     const hour = date.getHours();
     const minute = String(date.getMinutes()).padStart(2, "0");
     const period = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
+    const displayHour = hour % 12 || 12;
 
     return `${month} ${day}, ${displayHour}:${minute} ${period}`;
   };
 
-  // Handle clicking on an exam card
   const handleExamClick = (subject: Subject): void => {
     const timeRemaining = calculateTimeRemaining(subject.examDate);
     setSelectedSubject(subject);
 
     if (timeRemaining.isAvailable && user) {
-      // Show language selection modal for available exams
       setShowLanguageModal(true);
     } else {
-      // Show unavailable modal for unavailable exams
       setShowUnavailableModal(true);
     }
   };
 
-  // Function to organize subjects into kanban columns
   const organizeSubjects = () => {
     const notAvailable: Subject[] = [];
     const inProgress: Subject[] = [];
@@ -294,15 +291,16 @@ const ExamKanbanBoard = () => {
       }
     });
 
-    // Sort not available by closest exam date first
-    notAvailable.sort((a, b) => a.examDate.getTime() - b.examDate.getTime());
+    notAvailable.sort((a, b) => {
+      if (!a.examDate || !b.examDate) return 0;
+      return a.examDate.getTime() - b.examDate.getTime();
+    });
 
     return { notAvailable, inProgress, completed };
   };
 
   const { notAvailable, inProgress, completed } = organizeSubjects();
 
-  // Render an exam card
   const renderExamCard = (subject: Subject) => {
     const timeRemaining = calculateTimeRemaining(subject.examDate);
     const isAvailable =
@@ -354,7 +352,7 @@ const ExamKanbanBoard = () => {
             ) : isAvailable ? (
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent the card click from triggering
+                  e.stopPropagation();
                   handleExamClick(subject);
                 }}
                 className="w-full py-1 px-2 rounded text-xs font-medium text-center bg-[#3e6788] hover:bg-[#2d4d66] text-white transition-colors duration-300"
@@ -372,7 +370,6 @@ const ExamKanbanBoard = () => {
     );
   };
 
-  // Render a Kanban column
   const renderColumn = (
     title: string,
     subjects: Subject[],
@@ -417,7 +414,6 @@ const ExamKanbanBoard = () => {
         {renderColumn("Completed", completed, "bg-gray-600")}
       </div>
 
-      {/* Language Selection Modal */}
       {showLanguageModal && selectedSubject && (
         <LanguageSelectionModal
           subject={selectedSubject}
@@ -425,11 +421,9 @@ const ExamKanbanBoard = () => {
         />
       )}
 
-      {/* Unavailable Exam Modal */}
       {/* {showUnavailableModal && selectedSubject && (
         <UnavailableExamModal
           subject={selectedSubject}
-          formatExamDate={formatExamTimeWindow}
           onClose={() => setShowUnavailableModal(false)}
         />
       )} */}

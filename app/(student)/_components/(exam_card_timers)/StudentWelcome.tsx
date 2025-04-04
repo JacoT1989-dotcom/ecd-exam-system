@@ -56,10 +56,16 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
       return false;
     }
 
+    // If exam is not scheduled, it can't be available
+    if (!subject.isScheduled) {
+      return false;
+    }
+
     const now = currentTime.getTime();
 
     if (!subject.startingTime || !subject.dueTime) {
-      return now >= subject.examDate.getTime();
+      // If examDate is null, the exam can't be available
+      return subject.examDate ? now >= subject.examDate.getTime() : false;
     }
 
     const startTimeMs = adjustForSAST(new Date(subject.startingTime)).getTime();
@@ -75,6 +81,21 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     targetDate: Date;
     isCountingDown: boolean;
   } => {
+    // If exam is not scheduled, return default state with no timing info
+    if (!subject.isScheduled) {
+      return {
+        timeRemaining: {
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          isAvailable: false,
+        },
+        targetDate: new Date(),
+        isCountingDown: true,
+      };
+    }
+
     if (!currentTime) {
       return {
         timeRemaining: {
@@ -92,6 +113,21 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     const now = currentTime.getTime();
 
     if (!subject.startingTime || !subject.dueTime) {
+      // Handle null examDate
+      if (!subject.examDate) {
+        return {
+          timeRemaining: {
+            days: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            isAvailable: false,
+          },
+          targetDate: new Date(),
+          isCountingDown: true,
+        };
+      }
+
       const targetDate = adjustForSAST(new Date(subject.examDate));
       const difference = targetDate.getTime() - now;
       const isAvailable = difference <= 0;
@@ -194,6 +230,11 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
   };
 
   const formatExamTimeWindow = (subject: Subject): string => {
+    // For unscheduled exams
+    if (!subject.isScheduled) {
+      return "Not scheduled yet";
+    }
+
     if (!subject.startingTime || !subject.dueTime) {
       return formatExamDate(subject.examDate);
     }
@@ -217,7 +258,9 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     return `${month} ${day}, ${displayStartHour}:${startMinute} ${startPeriod} - ${displayDueHour}:${dueMinute} ${duePeriod}`;
   };
 
-  const formatExamDate = (date: Date): string => {
+  const formatExamDate = (date: Date | null): string => {
+    if (!date) return "Not scheduled yet";
+
     const adjustedDate = adjustForSAST(new Date(date));
     const month = adjustedDate.toLocaleString("en-ZA", { month: "short" });
     const day = adjustedDate.getDate();
@@ -249,6 +292,17 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     statusText: string;
     statusClass: string;
   } => {
+    // For unscheduled exams
+    if (!subject.isScheduled) {
+      return {
+        isEnded: false,
+        isAvailable: false,
+        isUpcoming: false,
+        statusText: "Not Scheduled",
+        statusClass: "bg-gray-100 text-gray-400",
+      };
+    }
+
     if (!currentTime || !subject.isActive) {
       return {
         isEnded: false,
@@ -263,7 +317,10 @@ const StudentWelcome = ({ subjects, fetchError }: StudentWelcomeProps) => {
     const now = currentTime.getTime();
 
     if (!subject.startingTime || !subject.dueTime) {
-      const isAvailable = now >= subject.examDate.getTime() && subject.isActive;
+      const isAvailable = subject.examDate
+        ? now >= new Date(subject.examDate).getTime() && subject.isActive
+        : false;
+
       return {
         isEnded: false,
         isAvailable,
