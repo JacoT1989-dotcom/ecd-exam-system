@@ -4,7 +4,8 @@ import { useSearchParams } from "next/navigation";
 import { ExamTabs } from "./_components/ExamTabs";
 import ExamTimer from "./_components/ExamTimer";
 import ScientificCalculator from "@/app/(student)/students/calculator/Calculator";
-import WritingPad from "./_components/WritingPad"; // Import the WritingPad component
+import WritingPad from "./_components/WritingPad";
+import ExamToolbar from "./_exam-modals/ExamToolbar";
 
 const LifeOrientationExamPage = () => {
   // Get URL parameters
@@ -29,7 +30,7 @@ const LifeOrientationExamPage = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6 ">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-center">
           {subjectName
             ? `${subjectName} Examination`
@@ -40,25 +41,14 @@ const LifeOrientationExamPage = () => {
           saved automatically.
         </p>
 
-        {subjectName && (
-          <div className="flex flex-col items-center">
-            <ExamTimer />
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={toggleCalculator}
-                className="px-6 py-2 bg-[#3e6788] text-white rounded-md shadow-md hover:bg-[#2c4a63] focus:outline-none focus:ring-2 focus:ring-[#3e6788] focus:ring-opacity-50 transition-colors"
-              >
-                Calculator
-              </button>
-              <button
-                onClick={toggleWritingPad}
-                className="px-6 py-2 bg-[#3e6788] text-white rounded-md shadow-md hover:bg-[#2c4a63] focus:outline-none focus:ring-2 focus:ring-[#3e6788] focus:ring-opacity-50 transition-colors"
-              >
-                Writing Pad
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Show timer and exam tools for all exams */}
+        <div className="flex flex-col items-center">
+          <ExamTimer />
+          <ExamToolbar
+            toggleCalculator={toggleCalculator}
+            toggleWritingPad={toggleWritingPad}
+          />
+        </div>
       </div>
 
       <ExamTabs subjectName={subjectName} subjectCode={subjectCode} />

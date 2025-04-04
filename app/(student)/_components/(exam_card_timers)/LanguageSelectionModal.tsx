@@ -12,13 +12,9 @@ const LanguageSelectionModal = ({
   onClose,
 }: LanguageSelectionModalProps) => {
   const handleLanguageSelect = (language: "eng" | "afr") => {
-    // Create URL-friendly subject name (lowercase, spaces replaced with hyphens)
-    const formattedSubjectName = subject.name
-      .toLowerCase()
-      .replace(/\s+/g, "-");
-
-    // Add subject name and code to the URL as query parameters
-    const examUrl = `/students/exam/subjects/${formattedSubjectName}-${language}?subjectName=${encodeURIComponent(subject.name)}&subjectCode=${encodeURIComponent(subject.code)}`;
+    // Replace spaces with hyphens in the subject name to avoid URL encoding
+    const formattedSubjectName = subject.name.replace(/\s+/g, "-");
+    const examUrl = `/students/exam/subjects/${formattedSubjectName}-${language}`;
     window.location.href = examUrl;
   };
 

@@ -76,7 +76,7 @@ export async function updateSubjectDates(
     }
 
     // Validate school hours (8am-6pm SAST)
-    if (startHours < 8 || startHours > 18 || dueHours < 8 || dueHours > 18) {
+    if (startHours < 8 || startHours > 21 || dueHours < 8 || dueHours > 21) {
       return { error: "Exam times must be between 08:00 and 18:00 SAST" };
     }
 

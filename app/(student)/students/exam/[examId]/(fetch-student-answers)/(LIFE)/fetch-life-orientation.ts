@@ -4,7 +4,7 @@ import { lucia } from "@/auth";
 import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { UserRole } from "@prisma/client";
-import { LifeOrientationQuestion } from "../../../subjects/(LIFE)/life-orientation-eng/types";
+import { LifeOrientationQuestion } from "../../../subjects/(LIFE)/Life-Sciences-eng/types";
 
 // Define the response type for the getLifeOrientationQuestions action
 type GetLifeOrientationQuestionsResponse = {

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getLifeOrientationExam } from "../../../subjects/(LIFE)/life-orientation-eng/actions";
+import { getLifeOrientationExam } from "../../../subjects/(LIFE)/Life-Sciences-eng/actions";
 
 const StudentExamAnswers = () => {
   const params = useParams();
