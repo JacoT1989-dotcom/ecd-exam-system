@@ -81,9 +81,21 @@ const ExamKanbanBoard = () => {
 
   const handleExamClick = (subject: Subject): void => {
     setSelectedSubject(subject);
-    const available = isExamAvailable(subject, currentTime, isClient);
 
-    if (available && user) {
+    // Check if the exam is within its time window (in progress)
+    let isWithinTimeWindow = false;
+    if (subject.startingTime && subject.dueTime) {
+      const startTime = new Date(subject.startingTime);
+      startTime.setHours(startTime.getHours() - 2);
+
+      const dueTime = new Date(subject.dueTime);
+      dueTime.setHours(dueTime.getHours() - 2);
+
+      isWithinTimeWindow = currentTime >= startTime && currentTime <= dueTime;
+    }
+
+    // Show language modal for exams in progress, regardless of isActive flag
+    if (isWithinTimeWindow && user) {
       setShowLanguageModal(true);
     } else {
       setShowUnavailableModal(true);
