@@ -139,9 +139,8 @@ export async function getLifeOrientationExam(examId: string) {
 /**
  * Server action to fetch LIFE101 (Life Sciences) subject details
  * including exam date, starting time, ending time, and subject information
- * This action uses the LifeOrientationExam connection to Subject
+ * This action directly queries the Subject table instead of going through LifeOrientationExam
  */
-
 export async function fetchLife101SubjectDetails() {
   try {
     // Get current session to verify user is authenticated
@@ -169,28 +168,29 @@ export async function fetchLife101SubjectDetails() {
       };
     }
 
-    // Find the Life Orientation exams for this user that are connected to LIFE101 subject
-    const examWithSubject = await prisma.lifeOrientationExam.findFirst({
+    // Find the LIFE101 subject directly from the Subject table
+    const subject = await prisma.subject.findUnique({
       where: {
-        userId: user.id,
-        subject: {
+        userId_subjectCode: {
+          userId: user.id,
           subjectCode: "LIFE101",
         },
       },
-      include: {
-        subject: true, // Include the subject details
-      },
     });
 
-    if (!examWithSubject || !examWithSubject.subject) {
+    if (!subject) {
       return {
-        error:
-          "LIFE101 subject not found or you don't have any associated exams.",
+        error: "LIFE101 subject not found for this user.",
       };
     }
 
-    // Return the subject details from the connected subject
-    const subject = examWithSubject.subject;
+    // Find any associated Life Orientation exam
+    const associatedExam = await prisma.lifeOrientationExam.findFirst({
+      where: {
+        userId: user.id,
+        subjectId: subject.id,
+      },
+    });
 
     return {
       success: true,
@@ -203,10 +203,10 @@ export async function fetchLife101SubjectDetails() {
         dueTime: subject.dueTime,
         isActive: subject.isExamSubjectActive,
       },
-      examId: examWithSubject.id, // Include the exam ID for reference
+      examId: associatedExam?.id, // Include the exam ID if found
     };
   } catch (error) {
-    console.error("Fetch Life101 subject details error:", error);
+    console.error("fetchLife101SubjectDetails: Error occurred", error);
     return {
       error: "Something went wrong. Please try again.",
     };
