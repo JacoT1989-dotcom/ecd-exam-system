@@ -6,28 +6,6 @@ import { Subject } from "./types";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
 
-type SubjectCode =
-  | "MATH101"
-  | "PHYS101"
-  | "LIFE101"
-  | "GEOG101"
-  | "HIST101"
-  | "ENHL101"
-  | "AFAL101"
-  | "ECON101"
-  | "BUSS101"
-  | "ACCO101"
-  | "CAT101"
-  | "IT101"
-  | "TOUR101"
-  | "CONS101"
-  | "AGRI101"
-  | "VART101"
-  | "MUSI101"
-  | "DRAM101"
-  | "SEHL101"
-  | "ZUHL101";
-
 export const fetchStudentSubjects = cache(
   async (
     forceRefresh?: boolean,
@@ -37,7 +15,7 @@ export const fetchStudentSubjects = cache(
   }> => {
     try {
       if (forceRefresh) {
-        revalidatePath("/dashboard");
+        revalidatePath("/student");
       }
 
       const { user } = await validateRequest();
@@ -60,12 +38,6 @@ export const fetchStudentSubjects = cache(
           isExamSubjectActive: true,
         },
       });
-
-      // Log raw database results to verify null values
-      console.log(
-        "Raw subject records from database:",
-        JSON.stringify(subjectRecords, null, 2),
-      );
 
       const colorMap: Record<string, string> = {
         MATH101: "bg-blue-500",
@@ -104,23 +76,6 @@ export const fetchStudentSubjects = cache(
       }
 
       const subjects = subjectRecords.map((record): Subject => {
-        // Check for null values and log them
-        if (record.examDate === null) {
-          console.log(
-            `Subject ${record.subjectCode} (${record.title}) has null examDate`,
-          );
-        }
-        if (record.startingTime === null) {
-          console.log(
-            `Subject ${record.subjectCode} (${record.title}) has null startingTime`,
-          );
-        }
-        if (record.dueTime === null) {
-          console.log(
-            `Subject ${record.subjectCode} (${record.title}) has null dueTime`,
-          );
-        }
-
         // Create a flag for unscheduled exams instead of using the current date
         const isExamScheduled =
           record.examDate !== null &&
@@ -143,12 +98,8 @@ export const fetchStudentSubjects = cache(
         };
       });
 
-      // Log transformed subjects to check values
-      console.log("Transformed subjects:", JSON.stringify(subjects, null, 2));
-
       return { subjects };
     } catch (error) {
-      console.error("Error fetching subjects:", error);
       return { error: "Failed to fetch your subjects. Please try again." };
     }
   },
