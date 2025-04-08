@@ -174,25 +174,6 @@ const Sidebar = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const profileSectionRef = useRef<HTMLDivElement>(null);
 
-  // Debug log user object on component mount
-  useEffect(() => {
-    console.log("[CLIENT] Sidebar: User object received:", user);
-    console.log("[CLIENT] Sidebar: User subject count:", user?.subjectCount);
-
-    // Check if the subjectCount property exists on the user object
-    if (user) {
-      console.log(
-        "[CLIENT] Subject count property exists:",
-        "subjectCount" in user,
-      );
-      console.log("[CLIENT] User object keys:", Object.keys(user));
-      console.log(
-        "[CLIENT] User object prototype:",
-        Object.getPrototypeOf(user),
-      );
-    }
-  }, [user]);
-
   // Load collapse state from localStorage on client side
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -229,30 +210,9 @@ const Sidebar = () => {
     event.stopPropagation();
   };
 
-  // Get subject count with multiple fallback methods
+  // Get subject count
   const getSubjectCount = () => {
-    console.log("[CLIENT] Getting subject count...");
-
-    // Method 1: Direct property access with optional chaining
-    const directAccess = user?.subjectCount;
-    console.log("[CLIENT] Direct property access:", directAccess);
-
-    // Method 2: Using 'in' operator to check if property exists
-    const hasProperty = user && "subjectCount" in user;
-    console.log("[CLIENT] Property exists check:", hasProperty);
-
-    // Method 3: Try different ways to access the property
-    const userAny = user as any;
-    const anyAccess = userAny?.subjectCount;
-    console.log("[CLIENT] Access via any:", anyAccess);
-
-    // Method 4: Check all properties
-    if (user) {
-      console.log("[CLIENT] All user properties:", Object.entries(user));
-    }
-
-    // Use the first available value or default to 0
-    return directAccess ?? 0;
+    return user?.subjectCount ?? 0;
   };
 
   return (
@@ -331,7 +291,7 @@ const Sidebar = () => {
               <div className="text-center">
                 <span
                   className="block text-2xl font-bold text-white"
-                  data-testid="subject-count" // Add testid for easier debugging
+                  data-testid="subject-count"
                 >
                   {getSubjectCount()}
                 </span>
@@ -393,7 +353,13 @@ const Sidebar = () => {
         <nav className="flex-1 py-4">
           <ul className="space-y-2">
             {navItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
+              const isActive =
+                // Exact match for root path
+                (item.href === "/students" &&
+                  (pathname === "/students" || pathname === "/students/")) ||
+                // For other routes, check if it's the current section
+                (item.href !== "/students" && pathname.startsWith(item.href));
+
               return (
                 <li key={item.name}>
                   <Link
