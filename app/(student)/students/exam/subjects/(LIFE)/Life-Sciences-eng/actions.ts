@@ -135,3 +135,80 @@ export async function getLifeOrientationExam(examId: string) {
     };
   }
 }
+
+/**
+ * Server action to fetch LIFE101 (Life Sciences) subject details
+ * including exam date, starting time, ending time, and subject information
+ * This action uses the LifeOrientationExam connection to Subject
+ */
+
+export async function fetchLife101SubjectDetails() {
+  try {
+    // Get current session to verify user is authenticated
+    const sessionId = cookies().get(lucia.sessionCookieName)?.value;
+    if (!sessionId) {
+      return {
+        error: "You must be logged in to view subject details.",
+      };
+    }
+
+    // Validate session and get user
+    const { user } = await lucia.validateSession(sessionId);
+    if (!user) {
+      // Invalid session
+      cookies().delete(lucia.sessionCookieName);
+      return {
+        error: "Session expired. Please log in again.",
+      };
+    }
+
+    // Check if user is a student
+    if (user.role !== UserRole.STUDENT) {
+      return {
+        error: "Only students can view life orientation exams.",
+      };
+    }
+
+    // Find the Life Orientation exams for this user that are connected to LIFE101 subject
+    const examWithSubject = await prisma.lifeOrientationExam.findFirst({
+      where: {
+        userId: user.id,
+        subject: {
+          subjectCode: "LIFE101",
+        },
+      },
+      include: {
+        subject: true, // Include the subject details
+      },
+    });
+
+    if (!examWithSubject || !examWithSubject.subject) {
+      return {
+        error:
+          "LIFE101 subject not found or you don't have any associated exams.",
+      };
+    }
+
+    // Return the subject details from the connected subject
+    const subject = examWithSubject.subject;
+
+    return {
+      success: true,
+      subject: {
+        id: subject.id,
+        title: subject.title,
+        subjectCode: subject.subjectCode,
+        examDate: subject.examDate,
+        startingTime: subject.startingTime,
+        dueTime: subject.dueTime,
+        isActive: subject.isExamSubjectActive,
+      },
+      examId: examWithSubject.id, // Include the exam ID for reference
+    };
+  } catch (error) {
+    console.error("Fetch Life101 subject details error:", error);
+    return {
+      error: "Something went wrong. Please try again.",
+    };
+  }
+}

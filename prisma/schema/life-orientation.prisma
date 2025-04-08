@@ -3,6 +3,9 @@ model LifeOrientationExam {
     title String
     grade Int
 
+    subjectId String?
+    subject   Subject? @relation(fields: [subjectId], references: [id])
+
     question1  String?
     question2  String?
     question3  String?
@@ -122,4 +125,6 @@ model LewensorienteringEksamen {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    Subject   Subject? @relation(fields: [subjectId], references: [id])
+    subjectId String?
 }
