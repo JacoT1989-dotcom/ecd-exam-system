@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Form,
   FormField,
@@ -12,7 +11,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 // Import section components
@@ -27,20 +25,33 @@ import { LifeOrientationExamFormType } from "../types";
 import { lifeOrientationExamFormSchema } from "../validations";
 import { getDefaultLifeOrientationExamValues } from "../validations";
 import { createLifeOrientationExam } from "../actions";
+import { ExamProgressContext } from "../../layout";
 
 // Update the ExamTabs function signature to accept the props
 export function ExamTabs({ subjectName = "", subjectCode = "" }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // Initialize form with default values, using the subject name for the title
+  // Get the progress context including the exam title and grade
+  const { updateProgress, activeTab, setActiveTab, examTitle, examGrade } =
+    useContext(ExamProgressContext);
+
+  // Initialize form with default values, using the context values for title and grade
   const form = useForm<LifeOrientationExamFormType>({
     resolver: zodResolver(lifeOrientationExamFormSchema),
     defaultValues: {
       ...getDefaultLifeOrientationExamValues(),
-      title: subjectName ? `${subjectName} ${subjectCode} Exam` : "",
+      title: examTitle,
+      grade: examGrade,
     },
   });
+
+  // Update the form when the examTitle or examGrade changes in context
+  useEffect(() => {
+    // Always set the title in the form from context - now it's non-editable
+    form.setValue("title", examTitle);
+    form.setValue("grade", examGrade);
+  }, [examTitle, examGrade, form]);
 
   const onSubmit = async (data: LifeOrientationExamFormType) => {
     setIsSubmitting(true);
@@ -68,31 +79,82 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
   };
 
   // Calculate completion percentage for each section
-  const getSectionCompletion = (start: number, end: number) => {
-    const values = form.getValues();
-    let completed = 0;
-    let total = end - start + 1;
+  const getSectionCompletion = React.useCallback(
+    (start: number, end: number) => {
+      const values = form.getValues();
+      let completed = 0;
+      let total = end - start + 1;
 
-    for (let i = start; i <= end; i++) {
-      const fieldName = `question${i}` as keyof LifeOrientationExamFormType;
-      if (values[fieldName]) {
-        completed++;
+      for (let i = start; i <= end; i++) {
+        const fieldName = `question${i}` as keyof LifeOrientationExamFormType;
+        if (values[fieldName]) {
+          completed++;
+        }
       }
-    }
 
-    return {
-      completed,
-      total,
-      percentage: Math.round((completed / total) * 100),
-    };
-  };
+      return {
+        completed,
+        total,
+        percentage: Math.round((completed / total) * 100),
+      };
+    },
+    [form],
+  );
 
-  const [activeTab, setActiveTab] = useState("section1");
+  // Update the progress whenever form values change
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      // Calculate all section completions
+      const section1 = getSectionCompletion(1, 10);
+      const section2 = getSectionCompletion(11, 20);
+      const section3 = getSectionCompletion(21, 30);
+      const section4 = getSectionCompletion(31, 40);
+      const section5 = getSectionCompletion(41, 50);
 
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-  };
+      // Calculate overall completion
+      const overallCompleted =
+        section1.completed +
+        section2.completed +
+        section3.completed +
+        section4.completed +
+        section5.completed;
+
+      // Update progress via context
+      updateProgress({
+        overall: { completed: overallCompleted, total: 50 },
+        sections: [
+          {
+            name: "Section 1",
+            completed: section1.completed,
+            total: section1.total,
+          },
+          {
+            name: "Section 2",
+            completed: section2.completed,
+            total: section2.total,
+          },
+          {
+            name: "Section 3",
+            completed: section3.completed,
+            total: section3.total,
+          },
+          {
+            name: "Section 4",
+            completed: section4.completed,
+            total: section4.total,
+          },
+          {
+            name: "Section 5",
+            completed: section5.completed,
+            total: section5.total,
+          },
+        ],
+      });
+    });
+
+    // Cleanup the subscription
+    return () => subscription.unsubscribe();
+  }, [form, updateProgress, getSectionCompletion]);
 
   // Navigation functions
   const goToNextSection = () => {
@@ -127,122 +189,21 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
     <div className="container mx-auto py-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Exam Header Information */}
+          {/* Main Content without TabsList */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h1 className="text-2xl font-bold mb-4">Life Orientation Exam</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Exam Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter exam title (e.g., Term 3 Life Orientation Exam)"
-                          readOnly={!!subjectName} // Make field read-only if subject name is provided
-                          className={
-                            !!subjectName
-                              ? "bg-gray-100 cursor-not-allowed"
-                              : ""
-                          }
-                          {...field}
-                        />
-                      </FormControl>
-                      {!!subjectName && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          This field is automatically populated based on the
-                          selected exam.
-                        </p>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div>
-                <FormField
-                  control={form.control}
-                  name="grade"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Grade</FormLabel>
-                      <FormControl>
-                        <select
-                          className="w-full rounded-md border border-input px-3 py-2"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseInt(e.target.value))
-                          }
-                          value={field.value}
-                        >
-                          <option value={12}>Grade 12</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Main Tabs Component */}
-          <Tabs
-            value={activeTab}
-            onValueChange={handleTabChange}
-            className="w-full"
-          >
-            <TabsList className="grid grid-cols-5 mb-6">
-              <TabsTrigger value="section1">
-                Section 1
-                <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
-                  {getSectionCompletion(1, 10).completed}/
-                  {getSectionCompletion(1, 10).total}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="section2">
-                Section 2
-                <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
-                  {getSectionCompletion(11, 20).completed}/
-                  {getSectionCompletion(11, 20).total}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="section3">
-                Section 3
-                <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
-                  {getSectionCompletion(21, 30).completed}/
-                  {getSectionCompletion(21, 30).total}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="section4">
-                Section 4
-                <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
-                  {getSectionCompletion(31, 40).completed}/
-                  {getSectionCompletion(31, 40).total}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="section5">
-                Section 5
-                <span className="ml-2 text-xs bg-slate-200 px-1.5 py-0.5 rounded-full">
-                  {getSectionCompletion(41, 50).completed}/
-                  {getSectionCompletion(41, 50).total}
-                </span>
-              </TabsTrigger>
-            </TabsList>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <TabsContent value="section1">
+            {activeTab === "section1" && (
+              <>
                 <SectionOne form={form} />
                 <div className="mt-6 flex justify-end">
                   <Button type="button" onClick={goToNextSection}>
                     Next Section
                   </Button>
                 </div>
-              </TabsContent>
+              </>
+            )}
 
-              <TabsContent value="section2">
+            {activeTab === "section2" && (
+              <>
                 <SectionTwo form={form} />
                 <div className="mt-6 flex justify-between">
                   <Button
@@ -256,9 +217,11 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                     Next Section
                   </Button>
                 </div>
-              </TabsContent>
+              </>
+            )}
 
-              <TabsContent value="section3">
+            {activeTab === "section3" && (
+              <>
                 <SectionThree form={form} />
                 <div className="mt-6 flex justify-between">
                   <Button
@@ -272,9 +235,11 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                     Next Section
                   </Button>
                 </div>
-              </TabsContent>
+              </>
+            )}
 
-              <TabsContent value="section4">
+            {activeTab === "section4" && (
+              <>
                 <SectionFour form={form} />
                 <div className="mt-6 flex justify-between">
                   <Button
@@ -288,9 +253,11 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                     Next Section
                   </Button>
                 </div>
-              </TabsContent>
+              </>
+            )}
 
-              <TabsContent value="section5">
+            {activeTab === "section5" && (
+              <>
                 <SectionFive form={form} />
                 <div className="mt-6 flex justify-between">
                   <Button
@@ -308,60 +275,8 @@ export function ExamTabs({ subjectName = "", subjectCode = "" }) {
                     {isSubmitting ? "Submitting..." : "Submit Exam"}
                   </Button>
                 </div>
-              </TabsContent>
-            </div>
-          </Tabs>
-
-          {/* Exam Progress */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="font-medium mb-4">Exam Progress</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span>Overall Completion:</span>
-                <span className="font-medium">
-                  {getSectionCompletion(1, 50).completed}/
-                  {getSectionCompletion(1, 50).total} questions answered
-                </span>
-              </div>
-              <div className="w-full bg-slate-200 rounded-full h-2.5">
-                <div
-                  className="bg-primary h-2.5 rounded-full"
-                  style={{
-                    width: `${getSectionCompletion(1, 50).percentage}%`,
-                  }}
-                ></div>
-              </div>
-
-              {/* Section breakdown */}
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
-                {[
-                  { name: "Section 1", start: 1, end: 10 },
-                  { name: "Section 2", start: 11, end: 20 },
-                  { name: "Section 3", start: 21, end: 30 },
-                  { name: "Section 4", start: 31, end: 40 },
-                  { name: "Section 5", start: 41, end: 50 },
-                ].map((section) => {
-                  const { completed, total, percentage } = getSectionCompletion(
-                    section.start,
-                    section.end,
-                  );
-                  return (
-                    <div key={section.name} className="text-center">
-                      <p className="text-sm font-medium mb-1">{section.name}</p>
-                      <div className="w-full bg-slate-200 rounded-full h-1.5 mb-1">
-                        <div
-                          className="bg-primary h-1.5 rounded-full"
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        {completed}/{total}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </form>
       </Form>

@@ -165,6 +165,13 @@ const navItems: NavItem[] = [
   { name: "Support", href: "/students/support", icon: SupportIcon },
 ];
 
+// Create a custom event type for TypeScript
+interface SidebarStateChangedEvent extends Event {
+  detail: {
+    isCollapsed: boolean;
+  };
+}
+
 const Sidebar = () => {
   const pathname = usePathname();
   const { user } = useSession();
@@ -201,6 +208,14 @@ const Sidebar = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     localStorage.setItem("sidebarCollapsed", newState.toString());
+
+    // Dispatch a custom event to immediately notify other components about the sidebar state change
+    const sidebarEvent = new CustomEvent("sidebarStateChanged", {
+      detail: {
+        isCollapsed: newState,
+      },
+    });
+    window.dispatchEvent(sidebarEvent);
   };
 
   // Handle opening the modal

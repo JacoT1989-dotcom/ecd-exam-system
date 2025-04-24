@@ -9,7 +9,7 @@ export const lifeOrientationExamSchema = z.object({
   id: z.string().uuid().optional(), // Optional as it will be auto-generated
   title: z
     .string()
-    .min(5, { message: "Title must be at least 5 characters" })
+    .min(3, { message: "Title must be at least 3 characters" })
     .max(100),
   grade: z
     .number()
